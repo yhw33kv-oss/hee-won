@@ -146,13 +146,28 @@ function submitSaju() {
   const userData = {
     name,
     gender: genderEl.value,
-    date,
+    birthDate: date,
+    calendarType: calEl.value,
+    birthTime: time,
+    birthTimeUnknown: timeUnknown,
+    birthPlace: region,
+    // legacy props for UI prepopulation
+    date: date,
     calendar: calEl.value,
-    time,
-    timeUnknown,
-    region
+    time: time
   };
   
+  if (typeof calculateSaju === 'function') {
+    try {
+      const calcResult = calculateSaju(userData);
+      userData.normalizedBirthData = calcResult.normalizedBirthData;
+      userData.sajuResult = calcResult.sajuResult;
+      console.log("Saju Calculated:", calcResult);
+    } catch(e) {
+      console.error("Saju Calculation Error:", e);
+    }
+  }
+
   saveUserData(userData);
   navigate('#saju-result');
 }
