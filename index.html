@@ -2,206 +2,272 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#6846c7">
   <title>HEE WON | 희원 도사</title>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, "Noto Sans KR", sans-serif;
-      background: linear-gradient(#eee7ff, #ffffff);
-      color: #262033;
-    }
-
-    .app {
-      max-width: 480px;
-      min-height: 100vh;
-      margin: auto;
-      padding: 35px 20px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .logo {
-      font-size: 45px;
-    }
-
-    h1 {
-      margin: 8px 0 3px;
-      font-size: 28px;
-    }
-
-    .sub {
-      color: #777;
-    }
-
-    .card {
-      background: white;
-      border-radius: 25px;
-      padding: 25px;
-      box-shadow: 0 10px 30px rgba(70,40,130,.1);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      line-height: 1.4;
-    }
-
-    .menu {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .menu button {
-      border: 0;
-      background: white;
-      border-radius: 20px;
-      padding: 22px 10px;
-      font-size: 16px;
-      box-shadow: 0 6px 20px rgba(60,40,100,.08);
-    }
-
-    .icon {
-      display: block;
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    .share {
-      width: 100%;
-      margin-top: 25px;
-      padding: 18px;
-      border: 0;
-      border-radius: 18px;
-      background: #6846c7;
-      color: white;
-      font-size: 17px;
-      font-weight: bold;
-    }
-
-    .copy {
-      width: 100%;
-      margin-top: 10px;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 18px;
-      background: white;
-      font-weight: bold;
-    }
-
-    #message {
-      text-align: center;
-      color: #6846c7;
-      min-height: 25px;
-    }
-
-    footer {
-      margin-top: 30px;
-      text-align: center;
-      color: #999;
-      font-size: 11px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="app">
+<div class="app-container">
 
-<header>
-  <div class="logo">🔮</div>
-  <h1>HEE WON</h1>
-  <div class="sub">희원 도사</div>
-</header>
+  <!-- Top bar with settings -->
+  <div class="top-bar">
+    <button class="settings-btn" onclick="navigate('#settings')" aria-label="설정">⚙️</button>
+  </div>
 
-<div class="card">
-  <h2>당신의 이야기를<br>운세로 만나보세요.</h2>
-  <p>
-    사주와 운세 풀이는 전통적 해석을 바탕으로 한
-    재미와 참고 목적의 콘텐츠입니다.
-  </p>
+  <!-- PAGE: MAIN -->
+  <div id="page-main" class="page active">
+    <header>
+      <div class="logo">🔮</div>
+      <h1>HEE WON</h1>
+      <div class="sub">희원 도사</div>
+    </header>
+
+    <div class="card">
+      <h2>당신의 이야기를<br>운세로 만나보세요.</h2>
+      <p style="color: #666; font-size: 15px; line-height: 1.5;">
+        사주와 운세 풀이는 전통적 해석을 바탕으로 한 재미와 참고 목적의 콘텐츠입니다.
+      </p>
+    </div>
+
+    <div class="menu">
+      <button onclick="navigate('#saju-input')">
+        <span class="icon">✨</span>사주풀이
+      </button>
+      <button onclick="navigate('#fortune-input')">
+        <span class="icon">🌙</span>오늘의 운세
+      </button>
+      <button onclick="navigate('#gunghap-input')">
+        <span class="icon">💜</span>궁합
+      </button>
+      <button onclick="navigate('#consult')">
+        <span class="icon">💬</span>상담
+      </button>
+    </div>
+
+    <button class="share" onclick="shareSite()">↗ 친구에게 공유하기</button>
+    <button class="copy" onclick="copyLink()">🔗 공유 링크 복사</button>
+    <p id="message"></p>
+
+    <footer>
+      HEE WON · 희원 도사<br>운세 콘텐츠는 오락 및 참고 목적으로 제공됩니다.
+    </footer>
+  </div>
+
+  <!-- PAGE: SAJU INPUT -->
+  <div id="page-saju-input" class="page">
+    <header>
+      <button class="back-btn" onclick="goBack()">❮</button>
+      <h1>사주풀이 정보</h1>
+    </header>
+    <div class="card">
+      <div class="form-group">
+        <label>이름</label>
+        <input type="text" id="saju-name" placeholder="홍길동">
+      </div>
+      <div class="form-group">
+        <label>성별</label>
+        <div class="radio-group">
+          <label><input type="radio" name="saju-gender" value="m"> 남성</label>
+          <label><input type="radio" name="saju-gender" value="f"> 여성</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>생년월일</label>
+        <input type="date" id="saju-date">
+        <div class="radio-group" style="margin-top: 10px;">
+          <label><input type="radio" name="saju-cal" value="solar" checked> 양력</label>
+          <label><input type="radio" name="saju-cal" value="lunar"> 음력</label>
+          <label><input type="radio" name="saju-cal" value="lunar_leap"> 음력(윤달)</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>태어난 시간</label>
+        <input type="time" id="saju-time">
+        <div class="checkbox-group">
+          <input type="checkbox" id="saju-time-unknown" onchange="toggleTimeInput('saju-time', 'saju-time-unknown')">
+          <label for="saju-time-unknown">태어난 시간을 모름</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>출생지역 (선택)</label>
+        <input type="text" id="saju-region" placeholder="예: 서울">
+      </div>
+      <button class="submit-btn" onclick="submitSaju()">사주풀이 시작 ✨</button>
+    </div>
+  </div>
+
+  <!-- PAGE: SAJU RESULT -->
+  <div id="page-saju-result" class="page">
+    <header>
+      <button class="back-btn" onclick="navigate('#main')">❮ 홈</button>
+      <h1>사주풀이 결과</h1>
+    </header>
+    <div class="result-box">
+      <h3>AI 상세 풀이 연결 준비 중 🔮</h3>
+      <p>현재 AI 사주 분석 엔진을 연결하기 위한<br>준비 작업이 진행 중입니다.</p>
+      
+      <div class="result-section"><h4>기본 사주 정보</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>성향</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>재물운</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>사업운 / 직업운</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>인간관계</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>건강 관련 일반적 참고</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>올해의 흐름</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>향후 흐름</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>희원 도사의 한마디</h4><p>데이터 연결 예정</p></div>
+      
+      <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+    </div>
+  </div>
+
+  <!-- PAGE: FORTUNE RESULT -->
+  <div id="page-fortune-result" class="page">
+    <header>
+      <button class="back-btn" onclick="navigate('#main')">❮ 홈</button>
+      <h1>오늘의 운세</h1>
+    </header>
+    <div class="result-box">
+      <h3>AI 상세 풀이 연결 준비 중 🌙</h3>
+      <p>오늘의 운세를 분석하기 위한<br>엔진 연결을 준비하고 있습니다.</p>
+      
+      <div class="result-section"><h4>오늘의 전체운</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>재물운</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>사업 / 직장운</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>인간관계</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>오늘 주의할 점</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>오늘의 한마디</h4><p>데이터 연결 예정</p></div>
+
+      <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+    </div>
+  </div>
+
+  <!-- PAGE: GUNGHAP INPUT -->
+  <div id="page-gunghap-input" class="page">
+    <header>
+      <button class="back-btn" onclick="goBack()">❮</button>
+      <h1>궁합 정보 입력</h1>
+    </header>
+    <div class="card">
+      <h3 style="margin-top:0; color:#4a3b72;">나의 정보</h3>
+      <div class="form-group">
+        <label>이름</label>
+        <input type="text" id="g-me-name">
+      </div>
+      <div class="form-group">
+        <label>성별</label>
+        <div class="radio-group">
+          <label><input type="radio" name="g-me-gender" value="m" checked> 남성</label>
+          <label><input type="radio" name="g-me-gender" value="f"> 여성</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>생년월일</label>
+        <input type="date" id="g-me-date">
+        <div class="radio-group" style="margin-top: 10px;">
+          <label><input type="radio" name="g-me-cal" value="solar" checked> 양력</label>
+          <label><input type="radio" name="g-me-cal" value="lunar"> 음력</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>태어난 시간</label>
+        <input type="time" id="g-me-time">
+      </div>
+      
+      <div class="divider"></div>
+
+      <h3 style="color:#4a3b72;">상대방 정보</h3>
+      <div class="form-group">
+        <label>이름</label>
+        <input type="text" id="g-you-name">
+      </div>
+      <div class="form-group">
+        <label>성별</label>
+        <div class="radio-group">
+          <label><input type="radio" name="g-you-gender" value="m"> 남성</label>
+          <label><input type="radio" name="g-you-gender" value="f" checked> 여성</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>생년월일</label>
+        <input type="date" id="g-you-date">
+        <div class="radio-group" style="margin-top: 10px;">
+          <label><input type="radio" name="g-you-cal" value="solar" checked> 양력</label>
+          <label><input type="radio" name="g-you-cal" value="lunar"> 음력</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>태어난 시간</label>
+        <input type="time" id="g-you-time">
+      </div>
+
+      <button class="submit-btn" onclick="submitGunghap()">궁합 확인하기 💜</button>
+    </div>
+  </div>
+
+  <!-- PAGE: GUNGHAP RESULT -->
+  <div id="page-gunghap-result" class="page">
+    <header>
+      <button class="back-btn" onclick="navigate('#main')">❮ 홈</button>
+      <h1>궁합 결과</h1>
+    </header>
+    <div class="result-box">
+      <h3>AI 상세 풀이 연결 준비 중 💜</h3>
+      <p>두 분의 궁합 분석을 위한<br>엔진 연결을 준비하고 있습니다.</p>
+      
+      <div class="result-section"><h4>전체 궁합</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>성격 궁합</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>대화 궁합</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>생활 궁합</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>재물 궁합</h4><p>데이터 연결 예정</p></div>
+      <div class="result-section"><h4>서로 조심해야 할 부분</h4><p>데이터 연결 예정</p></div>
+
+      <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+    </div>
+  </div>
+
+  <!-- PAGE: CONSULT -->
+  <div id="page-consult" class="page">
+    <header>
+      <button class="back-btn" onclick="goBack()">❮</button>
+      <h1>희원 도사 상담</h1>
+    </header>
+    <div class="card" id="consult-form">
+      <h2 style="font-size: 20px;">무엇이든 물어보세요.</h2>
+      <p style="color:#666; font-size:15px; margin-bottom: 20px;">
+        예: 올해 사업운은 어떤가요? 재물운이 궁금합니다.
+      </p>
+      <div class="form-group">
+        <textarea id="consult-query" placeholder="상담 내용을 자유롭게 적어주세요..."></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitConsult()">희원 도사에게 묻기 💬</button>
+    </div>
+
+    <div class="result-box" id="consult-result" style="display: none;">
+      <h3>AI 상담 연결 준비 중 💬</h3>
+      <p>자연어 기반 AI 상담 엔진을<br>연결할 준비를 하고 있습니다.</p>
+      <button class="action-btn" onclick="resetConsult()" style="margin-top: 20px;">다시 질문하기</button>
+      <button class="action-btn" onclick="navigate('#main')" style="margin-top: 10px;">메인으로 돌아가기</button>
+    </div>
+  </div>
+
+  <!-- PAGE: SETTINGS -->
+  <div id="page-settings" class="page">
+    <header>
+      <button class="back-btn" onclick="goBack()">❮</button>
+      <h1>설정 및 내 정보</h1>
+    </header>
+    <div class="card">
+      <div id="settings-info" style="margin-bottom: 20px; font-size: 15px; color: #555;">
+        <!-- User info injected here -->
+      </div>
+      <button id="delete-info-btn" class="action-btn" style="color: #d9534f; border-color: #d9534f; display: none;" onclick="deleteUserData()">내 정보 삭제하기</button>
+    </div>
+  </div>
+
 </div>
 
-<div class="menu">
-  <button onclick="notice('사주풀이')">
-    <span class="icon">✨</span>
-    사주풀이
-  </button>
-
-  <button onclick="notice('오늘의 운세')">
-    <span class="icon">🌙</span>
-    오늘의 운세
-  </button>
-
-  <button onclick="notice('궁합')">
-    <span class="icon">💜</span>
-    궁합
-  </button>
-
-  <button onclick="notice('상담')">
-    <span class="icon">💬</span>
-    상담
-  </button>
-</div>
-
-<button class="share" onclick="shareSite()">
-  ↗ 친구에게 공유하기
-</button>
-
-<button class="copy" onclick="copyLink()">
-  🔗 공유 링크 복사
-</button>
-
-<p id="message"></p>
-
-<footer>
-  HEE WON · 희원 도사<br>
-  운세 콘텐츠는 오락 및 참고 목적으로 제공됩니다.
-</footer>
-
-</div>
-
-<script>
-async function shareSite() {
-  const data = {
-    title: "HEE WON | 희원 도사",
-    text: "🔮 희원 도사에서 운세를 확인해봐!",
-    url: window.location.href
-  };
-
-  if (navigator.share) {
-    try {
-      await navigator.share(data);
-    } catch (e) {}
-  } else {
-    copyLink();
-  }
-}
-
-async function copyLink() {
-  try {
-    await navigator.clipboard.writeText(window.location.href);
-    document.getElementById("message").innerText =
-      "공유 링크를 복사했어요 💜";
-  } catch (e) {
-    document.getElementById("message").innerText =
-      "주소창의 링크를 복사해주세요.";
-  }
-}
-
-function notice(name) {
-  document.getElementById("message").innerText =
-    name + " 기능은 다음 단계에서 연결합니다 🔮";
-}
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>
