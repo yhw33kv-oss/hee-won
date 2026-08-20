@@ -104,21 +104,43 @@
       <button class="back-btn" onclick="navigate('#main')">❮ 홈</button>
       <h1>사주풀이 결과</h1>
     </header>
-    <div class="result-box">
-      <h3>AI 상세 풀이 연결 준비 중 🔮</h3>
-      <p>현재 AI 사주 분석 엔진을 연결하기 위한<br>준비 작업이 진행 중입니다.</p>
-      
-      <div class="result-section"><h4>기본 사주 정보</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>성향</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>재물운</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>사업운 / 직업운</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>인간관계</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>건강 관련 일반적 참고</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>올해의 흐름</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>향후 흐름</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>희원 도사의 한마디</h4><p>데이터 연결 예정</p></div>
-      
-      <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+
+    <div id="saju-no-data" class="result-box" style="display: none;">
+      <h3>사주 정보가 없습니다.</h3>
+      <p style="margin-bottom: 20px;">먼저 생년월일과 출생 정보를 입력해주세요.</p>
+      <button class="submit-btn" onclick="navigate('#saju-input')">사주 정보 입력하기</button>
+    </div>
+
+    <div id="saju-has-data" style="display: none;">
+      <div class="result-box" style="text-align: left;">
+        <h4 style="margin-top: 0; color: #6846c7; border-bottom: 1px solid #e1d5ff; padding-bottom: 8px;">기본 정보</h4>
+        <div id="saju-result-userinfo" style="font-size: 15px; color: #444; line-height: 1.6;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="result-box">
+        <h3 style="margin-bottom: 15px;">사주팔자 원국</h3>
+        <div class="pillars-grid" id="saju-pillars-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="result-box">
+        <h3>AI 상세 풀이 연결 준비 중 🔮</h3>
+        <p>현재 AI 사주 분석 엔진을 연결하기 위한<br>준비 작업이 진행 중입니다.</p>
+
+        <div class="result-section"><h4>성향</h4><p>데이터 연결 예정</p></div>
+        <div class="result-section"><h4>재물운</h4><p>데이터 연결 예정</p></div>
+        <div class="result-section"><h4>사업운 / 직업운</h4><p>데이터 연결 예정</p></div>
+        <div class="result-section"><h4>인간관계</h4><p>데이터 연결 예정</p></div>
+        <div class="result-section"><h4>건강 관련 일반적 참고</h4><p>데이터 연결 예정</p></div>
+        <div class="result-section"><h4>올해의 흐름</h4><p>데이터 연결 예정</p></div>
+        <div class="result-section"><h4>향후 흐름</h4><p>데이터 연결 예정</p></div>
+        <div class="result-section"><h4>희원 도사의 한마디</h4><p>데이터 연결 예정</p></div>
+
+        <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+      </div>
     </div>
   </div>
 
@@ -131,7 +153,7 @@
     <div class="result-box">
       <h3>AI 상세 풀이 연결 준비 중 🌙</h3>
       <p>오늘의 운세를 분석하기 위한<br>엔진 연결을 준비하고 있습니다.</p>
-      
+
       <div class="result-section"><h4>오늘의 전체운</h4><p>데이터 연결 예정</p></div>
       <div class="result-section"><h4>재물운</h4><p>데이터 연결 예정</p></div>
       <div class="result-section"><h4>사업 / 직장운</h4><p>데이터 연결 예정</p></div>
@@ -174,7 +196,7 @@
         <label>태어난 시간</label>
         <input type="time" id="g-me-time">
       </div>
-      
+
       <div class="divider"></div>
 
       <h3 style="color:#4a3b72;">상대방 정보</h3>
@@ -215,7 +237,7 @@
     <div class="result-box">
       <h3>AI 상세 풀이 연결 준비 중 💜</h3>
       <p>두 분의 궁합 분석을 위한<br>엔진 연결을 준비하고 있습니다.</p>
-      
+
       <div class="result-section"><h4>전체 궁합</h4><p>데이터 연결 예정</p></div>
       <div class="result-section"><h4>성격 궁합</h4><p>데이터 연결 예정</p></div>
       <div class="result-section"><h4>대화 궁합</h4><p>데이터 연결 예정</p></div>

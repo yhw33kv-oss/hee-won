@@ -37,7 +37,7 @@ function deleteUserData() {
 
 function handleRoute() {
   const hash = window.location.hash || '#main';
-  
+
   // Hide all pages
   document.querySelectorAll('.page').forEach(page => {
     page.classList.remove('active');
@@ -50,19 +50,103 @@ function handleRoute() {
   // Show target page
   const targetId = 'page-' + hash.replace('#', '');
   const targetEl = document.getElementById(targetId);
-  
+
   if (targetEl) {
     targetEl.classList.add('active');
     window.scrollTo(0, 0);
-    
+
     // Page specific setup
     if (hash === '#saju-input') setupSajuInput();
+    if (hash === '#saju-result') setupSajuResult();
     if (hash === '#fortune-input') setupFortuneInput();
     if (hash === '#settings') setupSettings();
   } else {
     // fallback
     document.getElementById('page-main').classList.add('active');
   }
+}
+
+const baziMap = {
+  stems: {
+    '甲': { e: '목', y: '양' }, '乙': { e: '목', y: '음' },
+    '丙': { e: '화', y: '양' }, '丁': { e: '화', y: '음' },
+    '戊': { e: '토', y: '양' }, '己': { e: '토', y: '음' },
+    '庚': { e: '금', y: '양' }, '辛': { e: '금', y: '음' },
+    '壬': { e: '수', y: '양' }, '癸': { e: '수', y: '음' }
+  },
+  branches: {
+    '子': { e: '수', y: '음' }, '丑': { e: '토', y: '음' },
+    '寅': { e: '목', y: '양' }, '卯': { e: '목', y: '음' },
+    '辰': { e: '토', y: '양' }, '巳': { e: '화', y: '양' },
+    '午': { e: '화', y: '음' }, '未': { e: '토', y: '음' },
+    '申': { e: '금', y: '양' }, '酉': { e: '금', y: '음' },
+    '戌': { e: '토', y: '양' }, '亥': { e: '수', y: '양' }
+  }
+};
+
+function renderPillar(title, pillarStr) {
+  if (!pillarStr) {
+    return `<div class="pillar-col">
+      <div class="pillar-title">${title}</div>
+      <div class="pillar-unknown">시주<br>미상</div>
+    </div>`;
+  }
+  const stem = pillarStr.charAt(0);
+  const branch = pillarStr.charAt(1);
+  const sMeta = baziMap.stems[stem] || { e: '', y: '' };
+  const bMeta = baziMap.branches[branch] || { e: '', y: '' };
+
+  return `<div class="pillar-col">
+    <div class="pillar-title">${title}</div>
+    <div class="pillar-char">${stem}</div>
+    <div class="pillar-meta"><span>${sMeta.y} ${sMeta.e}</span></div>
+    <div class="pillar-char" style="margin-top: 8px;">${branch}</div>
+    <div class="pillar-meta"><span>${bMeta.y} ${bMeta.e}</span></div>
+  </div>`;
+}
+
+function setupSajuResult() {
+  const noDataEl = document.getElementById('saju-no-data');
+  const hasDataEl = document.getElementById('saju-has-data');
+
+  if (!state.user || !state.user.sajuResult) {
+    noDataEl.style.display = 'block';
+    hasDataEl.style.display = 'none';
+    return;
+  }
+
+  noDataEl.style.display = 'none';
+  hasDataEl.style.display = 'block';
+
+  const u = state.user;
+  const n = u.normalizedBirthData;
+  const r = u.sajuResult;
+
+  // Basic Info
+  const calStr = u.calendarType === 'solar' ? '양력' : (u.calendarType === 'lunar_leap' ? '음력 윤달' : '음력');
+  const timeStr = u.birthTimeUnknown ? '시간 미상' : u.birthTime;
+  const regionStr = u.birthPlace || '미입력';
+
+  let infoHtml = `<strong>${u.name}</strong> (${u.gender === 'm' ? '남성' : '여성'})<br>`;
+  infoHtml += `${u.birthDate} (${calStr}) ${timeStr}<br>`;
+  infoHtml += `출생지: ${regionStr}<br>`;
+  infoHtml += `<span style="font-size:13px; color:#888;">계산 기준 양력: ${n.solarDate}</span>`;
+
+  document.getElementById('saju-result-userinfo').innerHTML = infoHtml;
+
+  // Pillars (Left to Right: 년, 월, 일, 시)
+  let gridHtml = '';
+  gridHtml += renderPillar('년주', r.yearPillar);
+  gridHtml += renderPillar('월주', r.monthPillar);
+  gridHtml += renderPillar('일주', r.dayPillar);
+
+  if (r.hourPillarStatus === 'UNKNOWN' || !r.hourPillar) {
+    gridHtml += renderPillar('시주', null);
+  } else {
+    gridHtml += renderPillar('시주', r.hourPillar);
+  }
+
+  document.getElementById('saju-pillars-grid').innerHTML = gridHtml;
 }
 
 function navigate(hash) {
@@ -156,7 +240,7 @@ function submitSaju() {
     calendar: calEl.value,
     time: time
   };
-  
+
   if (typeof calculateSaju === 'function') {
     try {
       const calcResult = calculateSaju(userData);
@@ -188,12 +272,12 @@ function setupFortuneInput() {
 function submitGunghap() {
   const meName = document.getElementById('g-me-name').value.trim();
   const youName = document.getElementById('g-you-name').value.trim();
-  
+
   if (!meName || !youName) {
     alert("본인과 상대방의 이름을 모두 입력해주세요.");
     return;
   }
-  
+
   navigate('#gunghap-result');
 }
 
@@ -204,7 +288,7 @@ function submitConsult() {
     alert("궁금한 내용을 입력해주세요.");
     return;
   }
-  
+
   // Show result state
   document.getElementById('consult-form').style.display = 'none';
   document.getElementById('consult-result').style.display = 'block';
