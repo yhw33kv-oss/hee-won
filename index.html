@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6846c7">
+  <title>HEE WON | 희원 도사</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      background: linear-gradient(#eee7ff, #ffffff);
+      color: #262033;
+    }
+
+    .app {
+      max-width: 480px;
+      min-height: 100vh;
+      margin: auto;
+      padding: 35px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-size: 45px;
+    }
+
+    h1 {
+      margin: 8px 0 3px;
+      font-size: 28px;
+    }
+
+    .sub {
+      color: #777;
+    }
+
+    .card {
+      background: white;
+      border-radius: 25px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(70,40,130,.1);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      line-height: 1.4;
+    }
+
+    .menu {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .menu button {
+      border: 0;
+      background: white;
+      border-radius: 20px;
+      padding: 22px 10px;
+      font-size: 16px;
+      box-shadow: 0 6px 20px rgba(60,40,100,.08);
+    }
+
+    .icon {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .share {
+      width: 100%;
+      margin-top: 25px;
+      padding: 18px;
+      border: 0;
+      border-radius: 18px;
+      background: #6846c7;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .copy {
+      width: 100%;
+      margin-top: 10px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 18px;
+      background: white;
+      font-weight: bold;
+    }
+
+    #message {
+      text-align: center;
+      color: #6846c7;
+      min-height: 25px;
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #999;
+      font-size: 11px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div class="logo">🔮</div>
+  <h1>HEE WON</h1>
+  <div class="sub">희원 도사</div>
+</header>
+
+<div class="card">
+  <h2>당신의 이야기를<br>운세로 만나보세요.</h2>
+  <p>
+    사주와 운세 풀이는 전통적 해석을 바탕으로 한
+    재미와 참고 목적의 콘텐츠입니다.
+  </p>
+</div>
+
+<div class="menu">
+  <button onclick="notice('사주풀이')">
+    <span class="icon">✨</span>
+    사주풀이
+  </button>
+
+  <button onclick="notice('오늘의 운세')">
+    <span class="icon">🌙</span>
+    오늘의 운세
+  </button>
+
+  <button onclick="notice('궁합')">
+    <span class="icon">💜</span>
+    궁합
+  </button>
+
+  <button onclick="notice('상담')">
+    <span class="icon">💬</span>
+    상담
+  </button>
+</div>
+
+<button class="share" onclick="shareSite()">
+  ↗ 친구에게 공유하기
+</button>
+
+<button class="copy" onclick="copyLink()">
+  🔗 공유 링크 복사
+</button>
+
+<p id="message"></p>
+
+<footer>
+  HEE WON · 희원 도사<br>
+  운세 콘텐츠는 오락 및 참고 목적으로 제공됩니다.
+</footer>
+
+</div>
+
+<script>
+async function shareSite() {
+  const data = {
+    title: "HEE WON | 희원 도사",
+    text: "🔮 희원 도사에서 운세를 확인해봐!",
+    url: window.location.href
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(data);
+    } catch (e) {}
+  } else {
+    copyLink();
+  }
+}
+
+async function copyLink() {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    document.getElementById("message").innerText =
+      "공유 링크를 복사했어요 💜";
+  } catch (e) {
+    document.getElementById("message").innerText =
+      "주소창의 링크를 복사해주세요.";
+  }
+}
+
+function notice(name) {
+  document.getElementById("message").innerText =
+    name + " 기능은 다음 단계에서 연결합니다 🔮";
+}
+</script>
+
+</body>
+</html>
