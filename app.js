@@ -66,38 +66,22 @@ function handleRoute() {
   }
 }
 
-const baziMap = {
-  stems: {
-    '甲': { e: '목', y: '양' }, '乙': { e: '목', y: '음' },
-    '丙': { e: '화', y: '양' }, '丁': { e: '화', y: '음' },
-    '戊': { e: '토', y: '양' }, '己': { e: '토', y: '음' },
-    '庚': { e: '금', y: '양' }, '辛': { e: '금', y: '음' },
-    '壬': { e: '수', y: '양' }, '癸': { e: '수', y: '음' }
-  },
-  branches: {
-    '子': { e: '수', y: '음' }, '丑': { e: '토', y: '음' },
-    '寅': { e: '목', y: '양' }, '卯': { e: '목', y: '음' },
-    '辰': { e: '토', y: '양' }, '巳': { e: '화', y: '양' },
-    '午': { e: '화', y: '음' }, '未': { e: '토', y: '음' },
-    '申': { e: '금', y: '양' }, '酉': { e: '금', y: '음' },
-    '戌': { e: '토', y: '양' }, '亥': { e: '수', y: '양' }
-  }
-};
-
-function renderPillar(title, pillarStr) {
+function renderPillar(title, pillarStr, tenGodStr) {
   if (!pillarStr) {
     return `<div class="pillar-col">
       <div class="pillar-title">${title}</div>
+      <div class="pillar-meta" style="color:#6846c7; font-weight:bold; margin-bottom: 5px;">${tenGodStr || '미상'}</div>
       <div class="pillar-unknown">시주<br>미상</div>
     </div>`;
   }
   const stem = pillarStr.charAt(0);
   const branch = pillarStr.charAt(1);
-  const sMeta = baziMap.stems[stem] || { e: '', y: '' };
-  const bMeta = baziMap.branches[branch] || { e: '', y: '' };
+  const sMeta = BAZI_MAP.stems[stem] || { e: '', y: '' };
+  const bMeta = BAZI_MAP.branches[branch] || { e: '', y: '' };
 
   return `<div class="pillar-col">
     <div class="pillar-title">${title}</div>
+    <div class="pillar-meta" style="color:#6846c7; font-weight:bold; margin-bottom: 5px;">${tenGodStr}</div>
     <div class="pillar-char">${stem}</div>
     <div class="pillar-meta"><span>${sMeta.y} ${sMeta.e}</span></div>
     <div class="pillar-char" style="margin-top: 8px;">${branch}</div>
@@ -122,6 +106,11 @@ function setupSajuResult() {
   const n = u.normalizedBirthData;
   const r = u.sajuResult;
 
+  // Analysis Layer
+  const analysis = typeof analyzeSaju === 'function' ? analyzeSaju(r) : null;
+  u.sajuAnalysis = analysis;
+  saveUserData(u); // Update local storage with analysis
+
   // Basic Info
   const calStr = u.calendarType === 'solar' ? '양력' : (u.calendarType === 'lunar_leap' ? '음력 윤달' : '음력');
   const timeStr = u.birthTimeUnknown ? '시간 미상' : u.birthTime;
@@ -136,17 +125,35 @@ function setupSajuResult() {
 
   // Pillars (Left to Right: 년, 월, 일, 시)
   let gridHtml = '';
-  gridHtml += renderPillar('년주', r.yearPillar);
-  gridHtml += renderPillar('월주', r.monthPillar);
-  gridHtml += renderPillar('일주', r.dayPillar);
+  gridHtml += renderPillar('년주', r.yearPillar, analysis ? analysis.stemTenGods.year : '');
+  gridHtml += renderPillar('월주', r.monthPillar, analysis ? analysis.stemTenGods.month : '');
+  gridHtml += renderPillar('일주', r.dayPillar, analysis ? analysis.stemTenGods.day : '');
 
   if (r.hourPillarStatus === 'UNKNOWN' || !r.hourPillar) {
-    gridHtml += renderPillar('시주', null);
+    gridHtml += renderPillar('시주', null, analysis ? analysis.stemTenGods.hour : '');
   } else {
-    gridHtml += renderPillar('시주', r.hourPillar);
+    gridHtml += renderPillar('시주', r.hourPillar, analysis ? analysis.stemTenGods.hour : '');
   }
 
   document.getElementById('saju-pillars-grid').innerHTML = gridHtml;
+
+  // Render Five Elements Distribution
+  if (analysis) {
+    const elOrder = ['목', '화', '토', '금', '수'];
+    let distHtml = `<div style="display: flex; justify-content: space-around; margin-top: 10px;">`;
+    elOrder.forEach(el => {
+      distHtml += `<div style="text-align:center;">
+        <div style="font-weight:bold; color:#444;">${el}</div>
+        <div style="font-size:14px; color:#666;">${analysis.fiveElementCount[el]}개</div>
+        <div style="font-size:12px; color:#999;">${analysis.displayPercent[el]}%</div>
+      </div>`;
+    });
+    distHtml += `</div>`;
+
+    // Inject it into index.html elements
+    const distContainer = document.getElementById('saju-element-dist');
+    if (distContainer) distContainer.innerHTML = distHtml;
+  }
 }
 
 function navigate(hash) {
