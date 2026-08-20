@@ -133,18 +133,29 @@
         </div>
       </div>
 
-      <div class="result-box">
-        <h3>AI 상세 풀이 연결 준비 중 🔮</h3>
-        <p>현재 AI 사주 분석 엔진을 연결하기 위한<br>준비 작업이 진행 중입니다.</p>
+      <div class="result-box" id="saju-interpretation-box" style="margin-top: 20px; display: none;">
+        <h3 style="margin-bottom: 15px;">사주 기본 성향 풀이</h3>
 
-        <div class="result-section"><h4>성향</h4><p>데이터 연결 예정</p></div>
-        <div class="result-section"><h4>재물운</h4><p>데이터 연결 예정</p></div>
-        <div class="result-section"><h4>사업운 / 직업운</h4><p>데이터 연결 예정</p></div>
-        <div class="result-section"><h4>인간관계</h4><p>데이터 연결 예정</p></div>
-        <div class="result-section"><h4>건강 관련 일반적 참고</h4><p>데이터 연결 예정</p></div>
-        <div class="result-section"><h4>올해의 흐름</h4><p>데이터 연결 예정</p></div>
-        <div class="result-section"><h4>향후 흐름</h4><p>데이터 연결 예정</p></div>
-        <div class="result-section"><h4>희원 도사의 한마디</h4><p>데이터 연결 예정</p></div>
+        <div id="time-unknown-warning" style="display: none; background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; font-size: 13px; margin-bottom: 15px;">
+          출생시간이 없어 시주 관련 해석은 제외되었습니다.
+        </div>
+
+        <div class="result-section"><h4>한눈에 보는 기본 성향</h4><p id="interp-summary" style="font-weight: bold; color: #6846c7;"></p></div>
+        <div class="result-section"><h4>일간 성향 (나의 본질)</h4><p id="interp-daymaster"></p></div>
+        <div class="result-section"><h4>오행 균형</h4><p id="interp-balance"></p></div>
+        <div class="result-section"><h4>일과 커리어</h4><p id="interp-career" style="white-space: pre-line;"></p></div>
+        <div class="result-section"><h4>재물 관리 성향</h4><p id="interp-money" style="white-space: pre-line;"></p></div>
+        <div class="result-section"><h4>인간관계</h4><p id="interp-rel" style="white-space: pre-line;"></p></div>
+        <div class="result-section"><h4>주의할 점</h4><p id="interp-cautions" style="white-space: pre-line;"></p></div>
+
+        <div style="margin-top: 20px;">
+          <button class="submit-btn" style="background-color: #eee; color: #444; font-size: 13px; padding: 10px;" onclick="document.getElementById('interp-evidence').style.display='block'">풀이 근거 보기</button>
+          <div id="interp-evidence" style="display:none; margin-top: 10px; padding: 10px; background: #fafafa; border: 1px solid #ddd; font-size: 12px; color: #666; border-radius: 5px;"></div>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 11px; color: #999; text-align: center; border-top: 1px dashed #eee; padding-top: 15px;">
+          본 풀이는 전통 명리학의 구조적 해석을 바탕으로 한 참고용 콘텐츠입니다. 중요한 재정·의료·법률·인생 결정은 실제 정보와 전문가 판단을 함께 고려해주세요.
+        </div>
 
         <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
       </div>
@@ -300,6 +311,7 @@
 <script src="lib/lunar.js"></script>
 <script src="engine.js"></script>
 <script src="engineAnalysis.js"></script>
+<script src="interpretation.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

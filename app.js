@@ -153,6 +153,33 @@ function setupSajuResult() {
     // Inject it into index.html elements
     const distContainer = document.getElementById('saju-element-dist');
     if (distContainer) distContainer.innerHTML = distHtml;
+
+    // Interpretation Layer
+    if (typeof generateInterpretation === 'function') {
+      const interp = generateInterpretation(analysis, r);
+      document.getElementById('saju-interpretation-box').style.display = 'block';
+
+      if (r.hourPillarStatus === 'UNKNOWN') {
+        document.getElementById('time-unknown-warning').style.display = 'block';
+      } else {
+        document.getElementById('time-unknown-warning').style.display = 'none';
+      }
+
+      document.getElementById('interp-summary').innerText = interp.summary;
+      document.getElementById('interp-daymaster').innerText = interp.dayMasterInterpretation;
+      document.getElementById('interp-balance').innerText = interp.elementBalanceInterpretation;
+      document.getElementById('interp-career').innerText = interp.careerInterpretation;
+      document.getElementById('interp-money').innerText = interp.moneyInterpretation;
+      document.getElementById('interp-rel').innerText = interp.relationshipInterpretation;
+      document.getElementById('interp-cautions').innerText = interp.cautions;
+
+      const evi = interp.evidence;
+      document.getElementById('interp-evidence').innerHTML =
+        `일간: ${evi.dayMaster}(${evi.dayMasterElement})<br>
+        우세 오행: ${evi.dominantElements.join(', ')}<br>
+        부족 오행: ${evi.weakElements.join(', ')}<br>
+        천간 십성: ${evi.stemTenGods.join(', ') || '없음'}`;
+    }
   }
 }
 
