@@ -59,10 +59,12 @@ function handleRoute() {
     if (hash === '#saju-input') setupSajuInput();
     if (hash === '#saju-result') setupSajuResult();
     if (hash === '#fortune-input') setupFortuneInput();
+    if (hash === '#fortune-result') setupFortuneResult();
     if (hash === '#settings') setupSettings();
   } else {
     // fallback
-    document.getElementById('page-main').classList.add('active');
+    const mainEl = document.getElementById('page-main');
+    if (mainEl) mainEl.classList.add('active');
   }
 }
 
@@ -343,5 +345,55 @@ function setupSettings() {
   } else {
     infoEl.innerHTML = `<p>저장된 사용자 정보가 없습니다.</p>`;
     document.getElementById('delete-info-btn').style.display = 'none';
+  }
+}
+
+function setupFortuneResult() {
+  const noDataEl = document.getElementById('fortune-no-data');
+  const hasDataEl = document.getElementById('fortune-has-data');
+
+  if (!state.user || !state.user.sajuResult) {
+    noDataEl.style.display = 'block';
+    hasDataEl.style.display = 'none';
+    document.getElementById('fortune-date-display').innerText = '';
+    return;
+  }
+
+  noDataEl.style.display = 'none';
+  hasDataEl.style.display = 'block';
+
+  const r = state.user.sajuResult;
+  let fortuneData = state.user.todayFortune;
+
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  if (!fortuneData || fortuneData.dateStr !== dateStr) {
+    fortuneData = typeof generateTodayFortune === 'function' ? generateTodayFortune(r, today) : null;
+    if(fortuneData) {
+      state.user.todayFortune = fortuneData;
+      saveUserData(state.user);
+    }
+  }
+
+  if (fortuneData) {
+    document.getElementById('fortune-date-display').innerText = `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
+    document.getElementById('fortune-today-pillar').innerText = `${fortuneData.todayPillars.dayStem}${fortuneData.todayPillars.dayBranch}`;
+    document.getElementById('fortune-tengod').innerText = fortuneData.todayTenGod;
+
+    document.getElementById('fortune-flow').innerText = fortuneData.sections.flow;
+    document.getElementById('fortune-career').innerText = fortuneData.sections.career;
+    document.getElementById('fortune-money').innerText = fortuneData.sections.money;
+    document.getElementById('fortune-rel').innerText = fortuneData.sections.rel;
+    document.getElementById('fortune-action').innerText = fortuneData.sections.action;
+
+    const evi = fortuneData.evidence;
+    document.getElementById('fortune-evidence').innerHTML =
+      `사용자 일간: ${evi.userDayMaster}<br>
+      사용자 일지: ${evi.userDayBranch}<br>
+      오늘 일간: ${evi.todayDayStem}<br>
+      오늘 일지: ${evi.todayDayBranch}<br>
+      오늘 십성: ${evi.todayTenGod}<br>
+      일지 관계: ${evi.branchRelation}`;
   }
 }

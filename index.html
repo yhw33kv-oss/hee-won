@@ -165,21 +165,45 @@
   <!-- PAGE: FORTUNE RESULT -->
   <div id="page-fortune-result" class="page">
     <header>
-      <button class="back-btn" onclick="navigate('#main')">❮ 홈</button>
+      <button class="back-btn" onclick="navigate('#main')">←</button>
       <h1>오늘의 운세</h1>
     </header>
-    <div class="result-box">
-      <h3>AI 상세 풀이 연결 준비 중 🌙</h3>
-      <p>오늘의 운세를 분석하기 위한<br>엔진 연결을 준비하고 있습니다.</p>
 
-      <div class="result-section"><h4>오늘의 전체운</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>재물운</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>사업 / 직장운</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>인간관계</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>오늘 주의할 점</h4><p>데이터 연결 예정</p></div>
-      <div class="result-section"><h4>오늘의 한마디</h4><p>데이터 연결 예정</p></div>
+    <div style="text-align:center;">
+      <p id="fortune-date-display" style="font-size:14px; color:#666; margin-bottom: 20px;"></p>
+    </div>
 
-      <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+    <div id="fortune-no-data" style="display:none; text-align:center; padding: 30px 15px;">
+      <p style="margin-bottom: 20px; color: #555;">오늘의 운세를 보려면 먼저 사주 정보를 입력해주세요.</p>
+      <button class="action-btn" onclick="navigate('#input')">사주 정보 입력하기</button>
+    </div>
+
+    <div id="fortune-has-data" style="display:none;">
+      <div class="result-box" style="text-align:center;">
+        <h3 style="margin-bottom: 10px;">오늘의 일진</h3>
+        <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+          <div id="fortune-today-pillar" style="font-size:24px; font-weight:bold; letter-spacing: 5px; color:#333;"></div>
+          <div id="fortune-tengod" style="font-size:14px; font-weight:bold; color:#6846c7; background:#f0e6ff; padding: 3px 8px; border-radius: 12px;"></div>
+        </div>
+      </div>
+
+      <div class="result-box" style="margin-top: 20px;">
+        <div class="result-section"><h4>오늘의 흐름</h4><p id="fortune-flow"></p></div>
+        <div class="result-section"><h4>일·사업</h4><p id="fortune-career"></p></div>
+        <div class="result-section"><h4>재물</h4><p id="fortune-money"></p></div>
+        <div class="result-section"><h4>관계</h4><p id="fortune-rel"></p></div>
+        <div class="result-section"><h4>오늘의 행동 조언</h4><p id="fortune-action"></p></div>
+
+        <div style="margin-top: 20px;">
+          <button class="submit-btn" style="background-color: #eee; color: #444; font-size: 13px; padding: 10px;" onclick="document.getElementById('fortune-evidence').style.display='block'">운세의 근거 보기</button>
+          <div id="fortune-evidence" style="display:none; margin-top: 10px; padding: 10px; background: #fafafa; border: 1px solid #ddd; font-size: 12px; color: #666; border-radius: 5px;"></div>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 11px; color: #999; text-align: center; border-top: 1px dashed #eee; padding-top: 15px;">
+          오늘의 운세는 전통 명리학의 구조적 관계를 바탕으로 제공되는 참고용 콘텐츠입니다. 중요한 결정은 실제 상황과 정보를 함께 고려해주세요.
+        </div>
+        <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+      </div>
     </div>
   </div>
 
@@ -312,6 +336,7 @@
 <script src="engine.js"></script>
 <script src="engineAnalysis.js"></script>
 <script src="interpretation.js"></script>
+<script src="fortune.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
