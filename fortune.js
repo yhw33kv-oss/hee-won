@@ -1,6 +1,6 @@
 // HEE WON Today's Fortune Engine V1 (Deterministic)
 
-const { BAZI_MAP: FORTUNE_BAZI_MAP, calculateTenGod: fortuneCalculateTenGod } = typeof module !== 'undefined' ? require('./engineAnalysis.js') : window;
+const { BAZI_MAP: FORTUNE_BAZI_MAP, calculateTenGod: fortuneCalculateTenGod } = typeof module !== 'undefined' && module.exports ? require('./engineAnalysis.js') : { BAZI_MAP, calculateTenGod };
 // Depending on environment, get Solar from window or require
 let LunarLib;
 if (typeof module !== 'undefined' && typeof window === 'undefined') {

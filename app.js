@@ -38,6 +38,11 @@ function deleteUserData() {
 function handleRoute() {
   const hash = window.location.hash || '#main';
 
+  if (hash === '#fortune-input') {
+    setupFortuneInput();
+    return;
+  }
+
   // Hide all pages
   document.querySelectorAll('.page').forEach(page => {
     page.classList.remove('active');
@@ -320,7 +325,12 @@ function submitSaju() {
   }
 
   saveUserData(userData);
-  navigate('#saju-result');
+  if (state.returnToPremium) {
+    state.returnToPremium = false;
+    navigate('#premium-report');
+  } else {
+    navigate('#saju-result');
+  }
 }
 
 // --- Fortune Logic ---
@@ -611,274 +621,142 @@ function setupPremiumReport() {
   let currentWindow = windows.find(w => currentYear >= w.startYear && currentYear <= w.endYear);
   let nextWindow = windows.find(w => w.startYear > currentYear);
   const candidates = (report.primeCandidateWindows || []).slice(0, 5);
+  const futureCandidates = candidates.filter(c => c.startYear > currentYear);
   const uniqueStates = candidates.length > 0
     ? [...new Set(candidates.map(c => c.strategyState))]
     : (currentWindow ? [currentWindow.strategyState] : []);
-  const actionTarget = candidates.length > 0 ? candidates : (currentWindow ? [currentWindow] : []);
 
-  // 1. Premium Hero
-  html += '<div style="background: linear-gradient(135deg, #4a3b72 0%, #2a2145 100%); padding: 30px 20px; border-radius: 12px; margin-bottom: 25px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
-  html += '<h2 style="margin: 0 0 15px 0; font-size: 24px; letter-spacing: 2px; color: #e1d5ff;">운담재 PREMIUM</h2>';
-  html += '<p style="font-size: 15px; margin: 0; line-height: 1.6; opacity: 0.9;">내 인생에서<br>언제 준비하고, 언제 움직이고,<br>언제 조정해야 하는지를<br>시간의 흐름으로 보여드립니다.</p>';
-  html += '</div>';
-
-  // 2. 현재 나의 위치
-  html += '<div class="result-box" style="border: 2px solid #e1d5ff;"><h3 style="margin-bottom: 15px; color: #4a3b72;">현재 나는 어디에 있는가</h3>';
+  // Premium Hero
+  html += '<div style="background: linear-gradient(135deg, #4a3b72 0%, #2a2145 100%); padding: 30px 20px; border-radius: 12px; margin-bottom: 25px; color: white; text-align: center;">';
+  html += '<div style="font-size: 14px; color: #e1d5ff; font-weight: bold; margin-bottom: 10px;">💎 운담재 PREMIUM</div>';
+  html += '<h2 style="margin: 0 0 15px 0; font-size: 22px;">나의 인생 타이밍 리포트</h2>';
   if (currentWindow) {
-    const isCurrentCand = candidates.some(c => currentYear >= c.startYear && currentYear <= c.endYear);
-    const candBadge = isCurrentCand ? '<span style="background: #ffe6e6; color: #cc0000; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-left: 10px;">전성기 후보 진행 중</span>' : '';
-
-    html += '<div style="background: #f8f6fb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">';
-    html += '<div style="font-size: 13px; color: #666; margin-bottom: 5px;">현재 핵심 흐름</div>';
-    html += '<div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px;">[' + STRATEGY_LABELS[currentWindow.strategyState] + ']' + candBadge + '</div>';
-    html += '<p style="font-size: 15px; color: #444; margin: 0; line-height: 1.6;">현재는 <strong>' + getStrategyTemplates(currentWindow.strategyState).desc + '</strong> 시기입니다.</p>';
-    if (currentWindow.conflictExist) {
-      html += '<p style="font-size: 13px; color: #d9534f; margin-top: 10px; font-weight: bold;">※ 여러 방향의 신호가 혼재되어 있으니 우선순위를 명확히 하세요.</p>';
-    }
-    html += '</div>';
-    html += '<div style="font-size: 13px; color: #666;">현재 대운: <strong>' + (currentWindow.activeDaYun || '정보 없음') + '</strong></div>';
-    if (nextWindow) {
-      const nextCand = candidates.find(c => c.startYear > currentYear);
-      if (nextCand) {
-        html += '<div style="font-size: 13px; color: #666; margin-top: 5px;">다음 핵심 구간: <strong>' + nextCand.startYear + '년~ (' + STRATEGY_LABELS[nextCand.strategyState] + ')</strong></div>';
-      }
-    }
-  } else {
-    html += '<p style="font-size: 15px; line-height: 1.6; color: #555;">현재 명확하게 나타나는 강한 구조적 흐름은 없습니다. 기본 흐름을 점검하는 시기입니다.</p>';
+    html += '<div style="font-size: 15px; margin-bottom: 5px; color: #e1d5ff;">현재 핵심 흐름: <span style="font-weight:bold; color:#fff;">[' + STRATEGY_LABELS[currentWindow.strategyState] + ']</span></div>';
+    html += '<div style="font-size: 15px; margin-bottom: 5px; color: #e1d5ff;">현재 위치: <span style="font-weight:bold; color:#fff;">' + currentYear + '년</span></div>';
+  }
+  if (nextWindow) {
+    html += '<div style="font-size: 15px; margin-bottom: 5px; color: #e1d5ff;">다음 핵심 구간: <span style="font-weight:bold; color:#fff;">' + nextWindow.startYear + '년~</span></div>';
+  }
+  if (currentWindow) {
+    html += '<div style="font-size: 15px; color: #e1d5ff;">현재 가장 중요한 전략: <span style="font-weight:bold; color:#fff;">' + STRATEGY_LABELS[currentWindow.strategyState] + '</span></div>';
   }
   html += '</div>';
 
-  // 3. 내 인생 흐름 한눈에 보기
-  if (windows.length > 0) {
-    html += '<div class="result-box"><h3 style="margin-bottom: 15px;">내 인생 흐름 한눈에 보기</h3>';
-    html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
-    windows.forEach(w => {
-      const isCurrent = currentYear >= w.startYear && currentYear <= w.endYear;
-      const isPast = w.endYear < currentYear;
-      const label = isCurrent ? "현재" : (isPast ? "지난 흐름" : "앞으로의 흐름");
-      const isCand = candidates.some(c => c.startYear === w.startYear && c.endYear === w.endYear);
+  const renderCard = (title, content, bgColor = '#fafafa', borderColor = '#ddd') => {
+    return `<div style="background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+      <h3 style="margin: 0 0 12px 0; font-size: 18px; color: #333;">${title}</h3>
+      <div style="font-size: 14px; color: #555; line-height: 1.6;">${content}</div>
+    </div>`;
+  };
 
-      html += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 10px; background: ' + (isCurrent ? '#f0ebf8' : '#fafafa') + '; border: 1px solid ' + (isCurrent ? '#d0c3eb' : '#eee') + '; border-radius: 6px;">';
-      html += '<div><span style="font-weight: bold; color: #333; font-size: 14px;">' + w.startYear + '~' + w.endYear + '</span>';
-      html += '<span style="margin-left: 10px; color: #6846c7; font-weight: bold; font-size: 14px;">' + STRATEGY_LABELS[w.strategyState] + '</span>';
-      html += (isCand ? '<span style="font-size: 11px; background: #ffe6e6; color: #cc0000; padding: 2px 4px; border-radius: 3px; margin-left: 5px;">주목</span>' : '') + '</div>';
-      html += '<div style="font-size: 12px; color: ' + (isCurrent ? '#6846c7' : '#999') + '; font-weight: ' + (isCurrent ? 'bold' : 'normal') + ';">' + label + '</div></div>';
-    });
-    html += '</div></div>';
+  // 1. 현재 나의 위치
+  if (currentWindow) {
+    const tpls = getStrategyTemplates(currentWindow.strategyState);
+    const content = `<strong>${currentYear}년</strong>은 <strong>[${STRATEGY_LABELS[currentWindow.strategyState]}]</strong> 흐름 안에 있습니다.<br>${tpls.desc}`;
+    html += renderCard('📍 현재 나의 위치', content);
   }
 
-  // 4. 주목할 전성기 후보
-  html += '<div class="result-box"><h3 style="margin-bottom: 15px;">' + (candidates.length === 5 ? '주목할 전성기 후보 TOP5' : '주목할 전성기 후보') + '</h3>';
+  // 2. 다음 핵심 시기
+  if (nextWindow) {
+    const tpls = getStrategyTemplates(nextWindow.strategyState);
+    const content = `다가오는 <strong>${nextWindow.startYear}~${nextWindow.endYear}년</strong>은 <strong>[${STRATEGY_LABELS[nextWindow.strategyState]}]</strong> 흐름이 예상됩니다.<br>${tpls.desc}`;
+    html += renderCard('🎯 다음 핵심 시기', content, '#f0ebf8', '#d0c3eb');
+  }
+
+  // 3. 전성기 후보
   if (candidates.length > 0) {
-    candidates.forEach((cand, index) => {
-      const strategyLabel = STRATEGY_LABELS[cand.strategyState] || cand.strategyState;
-      const tpls = getStrategyTemplates(cand.strategyState);
-
-      let timeTag = '';
-      if (currentYear >= cand.startYear && currentYear <= cand.endYear) {
-        timeTag = '<span style="background:#e1d5ff; color:#6846c7; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">현재</span>';
-      } else if (cand.startYear > currentYear && cand.startYear <= currentYear + 3) {
-        timeTag = '<span style="background:#d5e8ff; color:#005bb5; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">가까운 미래</span>';
-      } else if (cand.startYear > currentYear + 3) {
-        timeTag = '<span style="background:#e8f0fe; color:#1a73e8; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">미래</span>';
-      } else {
-        timeTag = '<span style="background:#eee; color:#666; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; font-weight:bold;">지난 구간</span>';
-      }
-
-      html += '<div style="background-color: #fafafa; border-radius: 8px; padding: 18px; margin-bottom: 15px; border-left: 4px solid #6846c7; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">';
-      html += '<h4 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">' + (index + 1) + '위: ' + cand.startYear + '년 ~ ' + cand.endYear + '년 ' + timeTag + '</h4>';
-      html += '<p style="font-weight: bold; color: #6846c7; margin-bottom: 12px; font-size: 15px;">흐름: ' + strategyLabel + '</p>';
-      html += '<div style="font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 8px;"><strong>핵심 요약:</strong> ' + tpls.desc + '</div>';
-      if (cand.conflictExist) {
-        html += '<div style="font-size: 13px; color: #d9534f; margin-bottom: 10px; font-weight: bold;">※ 주의: ' + tpls.dont[0] + '</div>';
-      }
-
-      const toggleId = 'premium-cand-' + index;
-      html += '<button class="action-btn" style="padding: 6px 10px; font-size: 12px; margin: 10px 0 0 0; background: #eee; color: #333; border: none; border-radius: 4px;" onclick="togglePremiumEvidence(\'' + toggleId + '\')">자세히 보기 ▾</button>';
-      html += '<div id="' + toggleId + '" style="display:none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; font-size: 13px; color: #555;">';
-      html += '<div style="margin-bottom: 8px;"><strong>적용 대운:</strong> ' + [...new Set(cand.years.map(y => y.activeDaYun).filter(Boolean))].join(', ') + '대운</div>';
-      html += '<div style="margin-bottom: 8px;"><strong>준비 포인트:</strong> ' + tpls.prep + '</div>';
-      html += '<div style="margin-bottom: 8px;"><strong>행동 추천:</strong> ' + tpls.do[0] + '</div>';
-      html += '</div></div>';
+    let candContent = '';
+    candidates.forEach((cand, idx) => {
+      candContent += `<div style="margin-bottom: 8px;"><strong>${cand.startYear}~${cand.endYear}년:</strong> [${STRATEGY_LABELS[cand.strategyState]}] 흐름</div>`;
     });
+    html += renderCard(candidates.length >= 5 ? '🌟 주목할 전성기 후보 TOP5' : '🌟 주목할 전성기 후보', candContent);
   } else {
-    html += '<div style="padding: 20px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; text-align: center;">';
-    html += '<p style="font-size: 14px; color: #555; margin-bottom: 10px; font-weight: bold;">현재 분석 기준에서는 여러 구조적 신호가 강하게 중첩되는 전성기 후보 구간이 확인되지 않았습니다.</p>';
-    html += '<p style="font-size: 13px; color: #777; margin-bottom: 15px; line-height: 1.6;">이는 \'좋은 시기가 없다\'는 뜻이 아니라, 특정 시기를 과도하게 강조할 만큼 신호가 집중되지 않았다는 의미입니다.</p>';
-    html += '<p style="font-size: 13px; color: #6846c7; margin-bottom: 0; font-weight: bold;">이 경우에는 특정 시기 하나보다, 현재 흐름과 이어지는 준비·행동 전략을 중심으로 점검하는 것이 적절합니다.</p>';
-    html += '</div>';
-  }
-  html += '</div>';
-
-  // 5. 가장 가까운 핵심 시기
-  const futureCandidates = candidates.filter(c => c.startYear > currentYear);
-  if (futureCandidates.length > 0) {
-    const nextCand = futureCandidates[0];
-    const tpls = getStrategyTemplates(nextCand.strategyState);
-    html += '<div class="result-box"><h3 style="margin-bottom: 15px;">가장 가까운 핵심 시기</h3>';
-    html += '<div style="background: #f0ebf8; padding: 18px; border-radius: 8px;">';
-    html += '<h4 style="margin: 0 0 10px 0; color: #4a3b72; font-size: 18px;">' + nextCand.startYear + '~' + nextCand.endYear + '년</h4>';
-    html += '<p style="font-size: 14px; color: #333; margin-bottom: 15px;"><strong>[' + STRATEGY_LABELS[nextCand.strategyState] + ']</strong> 흐름이 예상됩니다.</p>';
-    html += '<div style="font-size: 13px; color: #555; margin-bottom: 5px;"><strong>지금부터 준비할 것:</strong></div>';
-    html += '<ul style="font-size: 13px; color: #555; padding-left: 20px; margin-bottom: 15px;">';
-    tpls.do.forEach(item => html += '<li>' + item + '</li>');
-    html += '</ul>';
-    html += '</div></div>';
-  } else if (candidates.length === 0) {
-    html += '<div class="result-box"><h3 style="margin-bottom: 15px;">가장 가까운 핵심 시기</h3>';
-    html += '<p style="font-size: 14px; color: #555;">특정 시기보다 분산된 흐름이 나타나는 유형입니다. 일상적인 템포를 유지하며 내실을 다지세요.</p></div>';
+    html += renderCard('🌟 주목할 전성기 후보', '강하게 집중된 전성기 후보 구간이 없습니다.<br>특정 시기보다 현재 흐름에 집중하세요.');
   }
 
-  // 6. 기회 구간
-  html += '<div class="result-box"><h3 style="margin-bottom: 15px;">기회 구간</h3>';
-  const opportunityWindows = candidates.filter(c => ['EXPAND', 'EXECUTE', 'TRANSITION'].includes(c.strategyState));
-  if (opportunityWindows.length > 0) {
-    opportunityWindows.forEach(w => {
-      let desc = '';
-      if (w.strategyState === 'EXPAND') desc = "활동을 넓히기 좋은 기회";
-      else if (w.strategyState === 'EXECUTE') desc = "실행력이 강조되는 기회";
-      else if (w.strategyState === 'TRANSITION') desc = "환경 전환에 대응할 기회";
-      html += '<div style="margin-bottom: 10px; font-size: 14px; display: flex; align-items: center;"><span style="color: #28a745; margin-right: 8px;">●</span><strong>' + w.startYear + '-' + w.endYear + '년:</strong> <span style="margin-left: 5px;">' + desc + '</span></div>';
+  // 4. 기회 구간
+  const oppWindows = windows.filter(w => ['EXPAND', 'EXECUTE', 'TRANSITION'].includes(w.strategyState)).slice(0, 5);
+  if (oppWindows.length > 0) {
+    let oppContent = '';
+    oppWindows.forEach(w => {
+      oppContent += `<div style="margin-bottom: 8px;"><span style="color:#28a745; margin-right:5px;">●</span><strong>${w.startYear}~${w.endYear}년:</strong> ${STRATEGY_LABELS[w.strategyState]} 기회</div>`;
     });
+    html += renderCard('✅ 기회 구간', oppContent);
   } else {
-    html += '<p style="font-size: 14px; color: #555;">강하게 집중된 기회 후보 구간 없음</p>';
-    html += '<p style="font-size: 13px; color: #777;">특정 시기 하나보다 분산된 흐름으로 나타나는 유형입니다.</p>';
+    html += renderCard('✅ 기회 구간', '강하게 집중된 기회 후보 없음');
   }
-  html += '</div>';
 
-  // 7. 주의 구간
-  html += '<div class="result-box"><h3 style="margin-bottom: 15px;">주의 구간</h3>';
-  const cautionWindows = windows.filter(w => w.strategyState === 'MIXED' || w.conflictExist || w.strategyState === 'REVIEW');
-  if (cautionWindows.length > 0) {
-    html += '<p style="font-size: 13px; color: #666; margin-bottom: 15px;">여러 신호가 동시에 나타나거나 점검이 필요한 구간입니다. 한 방향에 과도하게 집중하기보다 우선순위를 좁히는 전략이 필요합니다.</p>';
-    cautionWindows.forEach(w => {
-      html += '<div style="margin-bottom: 10px; font-size: 14px; display: flex; align-items: center;"><span style="color: #d9534f; margin-right: 8px;">■</span><strong>' + w.startYear + '-' + w.endYear + '년:</strong> <span style="margin-left: 5px;">조정 및 주의 필요 (' + STRATEGY_LABELS[w.strategyState] + ')</span></div>';
+  // 5. 주의 구간
+  const cauWindows = windows.filter(w => w.strategyState === 'MIXED' || w.conflictExist || w.strategyState === 'REVIEW').slice(0, 5);
+  if (cauWindows.length > 0) {
+    let cauContent = '';
+    cauWindows.forEach(w => {
+      cauContent += `<div style="margin-bottom: 8px;"><span style="color:#d9534f; margin-right:5px;">■</span><strong>${w.startYear}~${w.endYear}년:</strong> ${STRATEGY_LABELS[w.strategyState]} (점검/주의)</div>`;
     });
+    html += renderCard('⚠️ 주의 구간', cauContent);
   } else {
-    html += '<p style="font-size: 14px; color: #555;">현재 기준에서 특별히 강조할 충돌 구간은 없습니다.</p>';
+    html += renderCard('⚠️ 주의 구간', '강하게 충돌하는 주의 구간이 없습니다.');
   }
-  html += '</div>';
 
-  // 8 & 9. 준비 전략 및 행동 전략
-  html += '<div class="result-box"><h3 style="margin-bottom: 15px;">구간별 행동 전략 가이드</h3>';
-  if (uniqueStates.length > 0) {
-    uniqueStates.forEach(state => {
-      const tpls = getStrategyTemplates(state);
-      html += '<div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">';
-      html += '<h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">[' + STRATEGY_LABELS[state] + '] 시기의 전략</h4>';
-
-      html += '<div style="margin-bottom: 15px;">';
-      html += '<strong style="color: #28a745; display: block; margin-bottom: 5px; font-size: 14px;">해야 할 일 (준비/행동)</strong>';
-      html += '<ul style="font-size: 13px; color: #555; padding-left: 20px; margin: 0; line-height: 1.6; list-style-type: none;">';
-      tpls.do.forEach(item => html += '<li><span style="color:#28a745; margin-right:5px;">✓</span>' + item + '</li>');
-      html += '</ul></div>';
-
-      html += '<div>';
-      html += '<strong style="color: #d9534f; display: block; margin-bottom: 5px; font-size: 14px;">피해야 할 일 (주의점)</strong>';
-      html += '<ul style="font-size: 13px; color: #555; padding-left: 20px; margin: 0; line-height: 1.6; list-style-type: none;">';
-      tpls.dont.forEach(item => html += '<li><span style="color:#d9534f; margin-right:5px;">△</span>' + item + '</li>');
-      html += '</ul></div>';
-
-      html += '</div>';
-    });
-  } else {
-    html += '<p style="font-size: 14px; color: #555;">현재는 특정 전략 하나를 강하게 제시하기보다 기본 구조와 현재 상황을 함께 점검하는 것이 적절합니다.</p>';
+  // 6. 준비 전략
+  if (currentWindow) {
+    const tpls = getStrategyTemplates(currentWindow.strategyState);
+    let prepContent = `<ul style="padding-left: 20px; margin:0;">`;
+    prepContent += `<li>${tpls.prep}</li>`;
+    prepContent += `</ul>`;
+    html += renderCard('📝 지금 준비할 것', prepContent);
   }
-  html += '</div>';
 
-  // 10. 분야별 해석
-  html += '<div class="result-box"><h3 style="margin-bottom: 15px;">핵심 시기 분야별 해석</h3>';
-  if (uniqueStates.length > 0) {
-    const mainState = uniqueStates[0];
-    const catAnalysis = getCategoryAnalysis(mainState);
-    if (catAnalysis) {
-      html += '<p style="font-size: 13px; color: #666; margin-bottom: 15px;">가장 중요한 <strong>[' + STRATEGY_LABELS[mainState] + ']</strong> 흐름을 바탕으로 분석한 분야별 가이드입니다.</p>';
-
-      const renderCat = (title, text, icon) => {
-        return '<div style="margin-bottom: 12px; background: #fdfdfd; padding: 12px; border-radius: 6px; border-left: 3px solid #6846c7;">' +
-               '<div style="font-weight: bold; font-size: 14px; color: #333; margin-bottom: 5px;">' + icon + ' ' + title + '</div>' +
-               '<div style="font-size: 13px; color: #555; line-height: 1.5;">' + text + '</div></div>';
-      };
-
-      html += renderCat('일 / 커리어', catAnalysis.career, '💼');
-      html += renderCat('재물 / 자원', catAnalysis.wealth, '💰');
-      html += renderCat('관계 / 협력', catAnalysis.relation, '🤝');
-      html += renderCat('변화 / 이동', catAnalysis.change, '🚀');
-      html += renderCat('준비 / 학습', catAnalysis.study, '📚');
-    }
-  } else {
-    html += '<p style="font-size: 14px; color: #555;">현재 특별히 강조되는 쏠림 현상이 없어, 전반적인 균형을 유지하는 것이 유리합니다.</p>';
+  // 7. 행동 전략
+  if (currentWindow) {
+    const tpls = getStrategyTemplates(currentWindow.strategyState);
+    let actContent = `<ul style="padding-left: 20px; margin:0;">`;
+    tpls.do.forEach(d => actContent += `<li><span style="color:#28a745;">✓</span> ${d}</li>`);
+    tpls.dont.forEach(d => actContent += `<li><span style="color:#d9534f;">△</span> ${d}</li>`);
+    actContent += `</ul>`;
+    html += renderCard('🏃 지금 행동할 것', actContent);
   }
-  html += '</div>';
 
-  // 11. 10년 단위 대운 흐름
-  html += '<div class="result-box"><h3 style="margin-bottom: 15px;">10년 단위 대운 흐름</h3>';
+  // 연도별 상세 데이터 (Accordion)
+  html += `<div style="margin-top: 30px; text-align: center;">
+    <button class="action-btn" style="background: #eee; color: #555; padding: 12px 20px; border-radius: 8px; border: none; font-size: 14px; width: 100%; font-weight: bold;" onclick="togglePremiumEvidence('year-detail-accordion')">연도별 상세 보기 ▾</button>
+  </div>
+  <div id="year-detail-accordion" style="display: none; margin-top: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">`;
+  
   if (report.annualResults && report.annualResults.length > 0) {
-    const dayuns = [];
-    report.annualResults.forEach(ann => {
-      if (!dayuns.find(d => d.ganZhi === ann.activeDaYun)) {
-        dayuns.push({
-          ganZhi: ann.activeDaYun,
-          startAge: ann.age,
-          startYear: ann.year
-        });
+    html += `<ul style="font-size: 13px; color: #555; padding-left: 20px; margin: 0; line-height: 1.8;">`;
+    let curGroupStart = report.annualResults[0].year;
+    let curGroupState = report.annualResults[0].strategyState;
+    let curGroupEnd = curGroupStart;
+
+    for (let i = 1; i < report.annualResults.length; i++) {
+      let ann = report.annualResults[i];
+      if (ann.strategyState === curGroupState) {
+        curGroupEnd = ann.year;
+      } else {
+        html += `<li><strong>${curGroupStart}~${curGroupEnd}년:</strong> [${STRATEGY_LABELS[curGroupState]}]</li>`;
+        curGroupStart = ann.year;
+        curGroupEnd = ann.year;
+        curGroupState = ann.strategyState;
       }
-    });
-
-    html += '<div style="display: flex; overflow-x: auto; padding-bottom: 10px; gap: 10px; scrollbar-width: none;">';
-    dayuns.forEach(dy => {
-      const isCur = report.annualResults.find(a => a.year === currentYear && a.activeDaYun === dy.ganZhi);
-      html += '<div style="flex: 0 0 auto; width: 120px; padding: 12px; border-radius: 8px; border: 1px solid ' + (isCur ? '#6846c7' : '#ddd') + '; background: ' + (isCur ? '#f0ebf8' : '#fafafa') + '; text-align: center;">';
-      html += '<div style="font-size: 16px; font-weight: bold; color: ' + (isCur ? '#6846c7' : '#333') + '; margin-bottom: 5px;">' + dy.ganZhi + '</div>';
-      html += '<div style="font-size: 12px; color: #666;">' + dy.startAge + '세 (' + dy.startYear + ')~</div>';
-      if (isCur) html += '<div style="font-size: 11px; font-weight: bold; color: #6846c7; margin-top: 8px;">현재 대운</div>';
-      html += '</div>';
-    });
-    html += '</div>';
+    }
+    html += `<li><strong>${curGroupStart}~${curGroupEnd}년:</strong> [${STRATEGY_LABELS[curGroupState]}]</li>`;
+    html += `</ul>`;
   } else {
-    html += '<p style="font-size: 14px; color: #555;">대운 정보를 불러올 수 없습니다.</p>';
+    html += `<p style="font-size: 13px; color: #777;">연도별 데이터가 없습니다.</p>`;
   }
-  html += '</div>';
-
-  // 12 & 13. 연도별 상세 및 판단 근거
-  html += '<div class="result-box"><h3 style="margin-bottom: 15px;">판단 근거 및 상세 내역</h3>';
-  if (candidates.length > 0) {
-    candidates.forEach((cand, index) => {
-      const toggleId = 'premium-detail-' + index;
-      const primaryPatternLabels = cand.primaryPatternIds.map(id => PATTERN_LABELS[id] || '복합 구조 신호').join(', ');
-
-      html += '<div style="margin-bottom: 10px;">';
-      html += '<button class="submit-btn" style="background-color: #eee; color: #444; font-size: 13px; padding: 10px;" onclick="togglePremiumEvidence(\'' + toggleId + '\')">';
-      html += cand.startYear + '~' + cand.endYear + '년 상세 분석 보기</button>';
-      html += '<div id="' + toggleId + '" style="display:none; margin-top: 10px; padding: 15px; background: #fafafa; border: 1px solid #ddd; font-size: 13px; color: #555; border-radius: 8px;">';
-
-      html += '<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">';
-      html += '<strong>적용 대운:</strong> ' + [...new Set(cand.years.map(y => y.activeDaYun).filter(Boolean))].join(', ') + '<br>';
-      html += '<strong>발견된 주요 신호:</strong> ' + primaryPatternLabels + '<br>';
-      html += '<strong>전략 방항:</strong> ' + STRATEGY_LABELS[cand.strategyState] + '<br>';
-      html += '<strong>충돌/복합 여부:</strong> ' + (cand.conflictExist ? '있음 (우선순위 조정 반영됨)' : '없음 (일관된 방향성)');
-      html += '</div>';
-
-      html += '<div style="margin-top: 10px;"><strong>연도별 구조적 흐름:</strong></div>';
-      html += '<ul style="padding-left: 20px; margin-top: 5px;">';
-      cand.years.forEach(y => {
-        html += '<li>' + y.year + '년 (' + y.age + '세): ' + STRATEGY_LABELS[y.strategyState] + '</li>';
-      });
-      html += '</ul>';
-      html += '<div style="margin-top: 10px; font-size: 12px; color: #777;">* 해당 구간은 위 신호들이 구조적으로 중첩되어 유의미한 활동 변화가 예상되는 시기입니다.</div>';
-      html += '</div></div>';
-    });
-  } else {
-    html += '<p style="font-size: 14px; color: #555; margin-bottom: 10px;">운담재는 기준을 충족하지 않은 시기를 억지로 전성기 후보로 생성하지 않습니다.</p>';
-    html += '<p style="font-size: 14px; color: #555; margin-bottom: 0;">여러 구조 신호가 일정 기준 이상 겹칠 때만 후보로 표시하여 신뢰도를 유지합니다.</p>';
-  }
-  html += '</div>';
-
-  // 14. Premium 안내
-  html += '<div style="margin-top: 30px; font-size: 12px; color: #888; text-align: center; border-top: 1px dashed #eee; padding-top: 20px; line-height: 1.6;">';
-  html += '<strong>운담재 Premium의 전성기 후보는 성공을 보장하는 시기가 아니라, 활동·변화·기회와 관련된 구조적 신호가 겹쳐 나타나는 구간을 의미합니다.</strong><br>';
-  html += '실제 결과는 선택과 환경에 따라 달라질 수 있습니다.<br>';
-  html += '중요한 결정은 본인의 상황과 전문가의 조언을 함께 고려하시기 바랍니다.</div>';
+  
+  html += `</div>`;
 
   container.innerHTML = html;
+}
+
+
+function startPremiumOnboarding() {
+  if (state.user && state.user.sajuResult) {
+    navigate('#premium-report');
+  } else {
+    state.returnToPremium = true;
+    navigate('#saju-input');
+  }
 }

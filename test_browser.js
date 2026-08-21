@@ -1,25 +1,10 @@
-const puppeteer = require('C:/Users/User/AppData/Roaming/npm/node_modules/puppeteer');
+﻿const puppeteer = require('C:/Users/User/AppData/Roaming/npm/node_modules/puppeteer');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 (async () => {
   console.log("Starting Browser Test...");
-  const browser = await puppeteer.launch({ headless: 'new' });
-  const page = await browser.newPage();
-  let consoleErrors = [];
-  page.on('console', msg => {
-    if (msg.type() === 'error') {
-      consoleErrors.push(msg.text());
-    }
-  });
-  page.on('pageerror', err => {
-    consoleErrors.push(err.toString());
-  });
-  page.on('dialog', async dialog => {
-    await dialog.accept();
-  });
-
-  const http = require('http');
-  const fs = require('fs');
-  const path = require('path');
   const server = http.createServer((req, res) => {
     let filePath = path.join('D:/새 폴더/AI_PROJECTS/HEE_WON', req.url === '/' ? 'index.html' : req.url);
     if (fs.existsSync(filePath)) {
@@ -30,53 +15,109 @@ const puppeteer = require('C:/Users/User/AppData/Roaming/npm/node_modules/puppet
       res.end();
     }
   });
-  server.listen(8082);
+  server.listen(8083);
 
-  const uri = 'http://localhost:8082/';
-  await page.goto(uri, { waitUntil: 'networkidle0' });
+  const browser = await puppeteer.launch({ headless: 'new' });
+  let consoleErrors = [];
 
-  async function runCase(year, rawDateStr) {
-    console.log("Inputting Case " + year);
-    await page.evaluate(() => navigate('#saju-input'));
-    await page.waitForSelector('#saju-name', { visible: true });
-
-    // Fill form
-    await page.evaluate((dStr) => {
-      document.querySelector('#saju-name').value = 'Test';
-      document.querySelector('input[name="saju-gender"][value="f"]').checked = true;
-      document.querySelector('#saju-date').value = dStr;
-      document.querySelector('#saju-time').value = '12:00';
-    }, rawDateStr);
-
-    await page.evaluate(() => submitSaju());
-
-    // Check if we advanced to result page
-    await new Promise(r => setTimeout(r, 500));
-    const isError = await page.evaluate(() => {
-      return document.querySelector('#page-saju-result').classList.contains('active') === false;
-    });
-
-    if (isError) {
-      console.log("CASE_INPUT_" + year + "_RESULT: VALIDATION_FAILED");
-      return;
-    }
-
-    await page.evaluate(() => navigate('#premium-report'));
-    await page.waitForSelector('#page-premium-report.active');
-
-    const html = await page.evaluate(() => document.getElementById('premium-has-data').innerHTML);
-    if (html.includes('운담재 PREMIUM')) {
-      console.log("CASE_" + year + "_RESULT: SUCCESS");
-    } else {
-      console.log("CASE_" + year + "_RESULT: FAIL");
-    }
+  async function newPage() {
+    const page = await browser.newPage();
+    page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+    page.on('pageerror', err => { consoleErrors.push(err.toString()); });
+    page.on('dialog', async dialog => { await dialog.accept(); });
+    return page;
   }
 
-  await runCase('1989', '1989-03-15');
-  await runCase('1990', '1990-03-15');
-  await runCase('1980', '1980-03-15');
-  await runCase('1990_FORMAT', '19900315');
-  await runCase('INVALID', '19900229');
+  // 1. CASE_HOME_PREMIUM_PREVIEW
+  try {
+    const p1 = await newPage();
+    await p1.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+
+    const hasPremiumCard = await p1.evaluate(() => document.body.innerHTML.includes('운담재 PREMIUM'));
+    if (!hasPremiumCard) throw new Error("No Premium Card on HOME");
+
+    await p1.evaluate(() => navigate('#premium-preview'));
+    await p1.waitForSelector('#page-premium-preview.active');
+
+    const hasCTA = await p1.evaluate(() => document.body.innerHTML.includes('내 Premium 분석 시작하기'));
+    if (hasCTA) console.log("CASE_HOME_PREMIUM_PREVIEW: PASS");
+    else console.log("CASE_HOME_PREMIUM_PREVIEW: FAIL (No CTA)");
+    await p1.close();
+  } catch(e) { console.log("CASE_HOME_PREMIUM_PREVIEW: FAIL", e.message); }
+
+  // 2. CASE_PREMIUM_START
+  try {
+    const p2 = await newPage();
+    await p2.goto('http://localhost:8083/#premium-preview', { waitUntil: 'networkidle0' });
+    await p2.evaluate(() => startPremiumOnboarding());
+    await p2.waitForSelector('#page-saju-input.active');
+
+    await p2.evaluate(() => {
+      document.querySelector('#saju-name').value = 'Test';
+      document.querySelector('input[name="saju-gender"][value="m"]').checked = true;
+      document.querySelector('#saju-date').value = '1990-03-15';
+      document.querySelector('#saju-time').value = '12:00';
+    });
+
+    await p2.evaluate(() => submitSaju());
+    await new Promise(r => setTimeout(r, 500));
+    
+    const isPremium = await p2.evaluate(() => document.querySelector('#page-premium-report').classList.contains('active'));
+    if (isPremium) console.log("CASE_PREMIUM_START: PASS");
+    else console.log("CASE_PREMIUM_START: FAIL");
+    await p2.close();
+  } catch(e) { console.log("CASE_PREMIUM_START: FAIL", e.message); }
+
+  // 3. CASE_FREE_SAJU
+  try {
+    const p3 = await newPage();
+    await p3.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+    await p3.evaluate(() => navigate('#saju-input'));
+    await p3.evaluate(() => {
+      document.querySelector('#saju-name').value = 'Test';
+      document.querySelector('input[name="saju-gender"][value="m"]').checked = true;
+      document.querySelector('#saju-date').value = '2000-01-01';
+      document.querySelector('#saju-time').value = '12:00';
+    });
+    await p3.evaluate(() => submitSaju());
+    await new Promise(r => setTimeout(r, 500));
+
+    const html = await p3.evaluate(() => document.querySelector('#page-saju-result').innerHTML);
+
+    const hasCTA = html.includes('운담재 Premium 보기');
+    const hasDashboard = html.includes('주목할 전성기 후보') || html.includes('id="premium-candidates-container"');
+
+    if (hasCTA && !hasDashboard) console.log("CASE_FREE_SAJU: PASS");
+    else console.log("CASE_FREE_SAJU: FAIL", {hasCTA, hasDashboard});
+    await p3.close();
+  } catch(e) { console.log("CASE_FREE_SAJU: FAIL", e.message); }
+
+  // 4. CASE_PREMIUM_REPORT
+  try {
+    const p4 = await newPage();
+    await p4.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+    
+    await p4.evaluate(() => navigate('#saju-input'));
+    await p4.evaluate(() => {
+      document.querySelector('#saju-name').value = 'Test';
+      document.querySelector('input[name="saju-gender"][value="m"]').checked = true;
+      document.querySelector('#saju-date').value = '1985-05-15';
+      document.querySelector('#saju-time').value = '12:00';
+    });
+    await p4.evaluate(() => submitSaju());
+    await new Promise(r => setTimeout(r, 500));
+
+    await p4.evaluate(() => navigate('#premium-report'));
+    await p4.waitForSelector('#page-premium-report.active');
+
+    const html = await p4.evaluate(() => document.querySelector('#premium-candidates-container').innerHTML);
+    if (html.includes('현재 나의 위치') && html.includes('다음 핵심 시기') && html.includes('전성기 후보') && html.includes('기회 구간') && html.includes('주의 구간') && html.includes('준비할 것') && html.includes('행동할 것')) {
+      console.log("CASE_PREMIUM_REPORT: PASS");
+    } else {
+      console.log("CASE_PREMIUM_REPORT: FAIL - Missing keywords");
+    }
+    await p4.close();
+  } catch(e) { console.log("CASE_PREMIUM_REPORT: FAIL", e.message); }
 
   console.log("CONSOLE_ERRORS:");
   if (consoleErrors.length > 0) {
