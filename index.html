@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#6846c7">
-  <title>HEE WON | 희원 도사</title>
+  <title>운담재</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,8 +20,8 @@
   <div id="page-main" class="page active">
     <header>
       <div class="logo">🔮</div>
-      <h1>HEE WON</h1>
-      <div class="sub">희원 도사</div>
+      <h1>운담재</h1>
+      <div class="sub">운담재</div>
     </header>
 
     <div class="card">
@@ -51,7 +51,7 @@
     <p id="message"></p>
 
     <footer>
-      HEE WON · 희원 도사<br>운세 콘텐츠는 오락 및 참고 목적으로 제공됩니다.
+      운담재 ·운담재<br>운세 콘텐츠는 오락 및 참고 목적으로 제공됩니다.
     </footer>
   </div>
 
@@ -157,7 +157,44 @@
           본 풀이는 전통 명리학의 구조적 해석을 바탕으로 한 참고용 콘텐츠입니다. 중요한 재정·의료·법률·인생 결정은 실제 정보와 전문가 판단을 함께 고려해주세요.
         </div>
 
+        <div class="result-box" style="margin-top: 20px; background-color: #f7f3ff; border: 1px solid #e1d5ff;">
+          <h3 style="margin-bottom: 10px; color: #4a3b72;">내 인생에서 주목해야 할 시기는 언제일까요?</h3>
+          <p style="font-size: 14px; color: #555; margin-bottom: 15px;">대운과 세운이 함께 만드는 핵심 타이밍을 확인해보세요.</p>
+          <button class="submit-btn" style="background-color: #6846c7;" onclick="navigate('#premium-report')">전성기 후보 TOP5 보기</button>
+        </div>
+
         <button class="action-btn" onclick="navigate('#main')" style="margin-top: 20px;">메인으로 돌아가기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: PREMIUM REPORT -->
+  <div id="page-premium-report" class="page">
+    <header>
+      <button class="back-btn" onclick="navigate('#saju-result')">❮ 결과</button>
+      <h1>운담재 Premium</h1>
+    </header>
+
+    <div id="premium-no-data" class="result-box" style="display: none;">
+      <h3>사주 정보가 없습니다.</h3>
+      <p style="margin-bottom: 20px;">먼저 사주 정보를 입력해주세요.</p>
+      <button class="submit-btn" onclick="navigate('#saju-input')">사주 정보 입력하기</button>
+    </div>
+
+    <div id="premium-has-data" style="display: none;">
+      <div class="card" style="text-align: center;">
+        <h2 style="color: #6846c7; margin-bottom: 10px;">주목할 전성기 후보 TOP5</h2>
+        <p style="color: #666; font-size: 14px; line-height: 1.5; text-align: left;">
+          성공을 확정하는 점수가 아니라, 대운과 세운에서 활동 및 변화 신호가 구조적으로 겹치는 시기를 분석한 결과입니다.
+        </p>
+      </div>
+
+      <div id="premium-candidates-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div style="margin-top: 30px; font-size: 11px; color: #999; text-align: center; border-top: 1px dashed #eee; padding-top: 15px; margin-bottom: 20px;">
+        운담재의 타이밍 분석은 특정 사건이나 성공 여부를 보장하는 예측이 아니라, 사주 원국과 대운·세운의 구조적 관계를 바탕으로 활동과 전략의 흐름을 정리한 참고 정보입니다.
       </div>
     </div>
   </div>
@@ -295,7 +332,7 @@
   <div id="page-consult" class="page">
     <header>
       <button class="back-btn" onclick="goBack()">❮</button>
-      <h1>희원 도사 상담</h1>
+      <h1>운담재 상담</h1>
     </header>
     <div class="card" id="consult-form">
       <h2 style="font-size: 20px;">무엇이든 물어보세요.</h2>
@@ -305,7 +342,7 @@
       <div class="form-group">
         <textarea id="consult-query" placeholder="상담 내용을 자유롭게 적어주세요..."></textarea>
       </div>
-      <button class="submit-btn" onclick="submitConsult()">희원 도사에게 묻기 💬</button>
+      <button class="submit-btn" onclick="submitConsult()">운담재에게 묻기 💬</button>
     </div>
 
     <div class="result-box" id="consult-result" style="display: none;">
@@ -335,6 +372,8 @@
 <script src="lib/lunar.js"></script>
 <script src="engine.js"></script>
 <script src="engineAnalysis.js"></script>
+<script src="premiumPatterns.js"></script>
+<script src="enginePremium.js"></script>
 <script src="interpretation.js"></script>
 <script src="fortune.js"></script>
 <script src="app.js"></script>

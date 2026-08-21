@@ -1,7 +1,28 @@
 // enginePremium.js
+(function(global) {
+  'use strict';
 
-const { ACTIVITY, STRATEGY_STATE, RELATION, MATCH_LEVEL, TIER, COMPOSITE_PATTERNS } = require('./premiumPatterns.js');
-const { getBranchRelation } = require('./fortune.js');
+  const patterns = (typeof module !== 'undefined' && module.exports && typeof require === 'function')
+    ? require('./premiumPatterns.js')
+    : global.UndamjaePremiumPatterns;
+
+  if (!patterns || !patterns.ACTIVITY) throw new Error("UndamjaePremiumPatterns missing");
+
+  const { ACTIVITY, STRATEGY_STATE, RELATION, MATCH_LEVEL, TIER, COMPOSITE_PATTERNS } = patterns;
+
+  const getBranchRelation = (typeof module !== 'undefined' && module.exports && typeof require === 'function')
+    ? require('./fortune.js').getBranchRelation
+    : function(...args) {
+        if (typeof global.getBranchRelation !== 'function') throw new Error("fortune missing: getBranchRelation is not globally available");
+        return global.getBranchRelation(...args);
+      };
+
+  const calculateTenGod = (typeof module !== 'undefined' && module.exports && typeof require === 'function')
+    ? require('./engineAnalysis.js').calculateTenGod
+    : function(...args) {
+        if (typeof global.calculateTenGod !== 'function') throw new Error("engineAnalysis missing: calculateTenGod is not globally available");
+        return global.calculateTenGod(...args);
+      };
 
 function mapTenGodToActivity(tenGod) {
   if (["비견", "겁재"].includes(tenGod)) return ACTIVITY.SELF_INDEPENDENCE;
@@ -356,7 +377,7 @@ function processPremiumReport(sajuResult, lunarEightChar) {
     if (!dyGanZhi) continue;
     const dyStem = dyGanZhi[0];
     const dyBranch = dyGanZhi[1];
-    const { calculateTenGod } = require('./engineAnalysis.js');
+    // calculateTenGod is already destructured at the top
     const dyStemTenGod = calculateTenGod(sajuResult.dayMaster, dyStem);
     
     const liunians = dy.getLiuNian();
@@ -391,8 +412,7 @@ function processPremiumReport(sajuResult, lunarEightChar) {
   };
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
+  const exportsObj = {
     mapTenGodToActivity,
     mapActivityToStrategyCandidate,
     evaluateEvidenceExpression,
@@ -403,4 +423,12 @@ if (typeof module !== 'undefined' && module.exports) {
     sortPrimeCandidates,
     processPremiumReport
   };
-}
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = exportsObj;
+  }
+
+  if (global) {
+    global.UndamjaePremiumEngine = exportsObj;
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

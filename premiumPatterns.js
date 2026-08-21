@@ -1,5 +1,6 @@
 // premiumPatterns.js
-
+(function(global) {
+  'use strict';
 const ACTIVITY = {
   SELF_INDEPENDENCE: 'SELF_INDEPENDENCE',
   OUTPUT_EXPRESSION: 'OUTPUT_EXPRESSION',
@@ -252,6 +253,13 @@ const COMPOSITE_PATTERNS = [
   }
 ];
 
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { ACTIVITY, STRATEGY_STATE, RELATION, RELATION_ROLES, MATCH_LEVEL, TIER, COMPOSITE_PATTERNS };
-}
+  const exportsObj = { ACTIVITY, STRATEGY_STATE, RELATION, RELATION_ROLES, MATCH_LEVEL, TIER, COMPOSITE_PATTERNS };
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = exportsObj;
+  }
+
+  if (global) {
+    global.UndamjaePremiumPatterns = exportsObj;
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

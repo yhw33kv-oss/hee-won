@@ -1,6 +1,6 @@
 // HEE WON Today's Fortune Engine V1 (Deterministic)
 
-const { BAZI_MAP, calculateTenGod } = typeof module !== 'undefined' ? require('./engineAnalysis.js') : window;
+const { BAZI_MAP: FORTUNE_BAZI_MAP, calculateTenGod: fortuneCalculateTenGod } = typeof module !== 'undefined' ? require('./engineAnalysis.js') : window;
 // Depending on environment, get Solar from window or require
 let LunarLib;
 if (typeof module !== 'undefined' && typeof window === 'undefined') {
@@ -126,12 +126,12 @@ function generateTodayFortune(sajuResult, targetDate = new Date()) {
   
   const userDayStem = sajuResult.dayPillar.charAt(0);
   const userDayBranch = sajuResult.dayPillar.charAt(1);
-  const userDMeta = BAZI_MAP.stems[userDayStem];
+  const userDMeta = FORTUNE_BAZI_MAP.stems[userDayStem];
   
   const todayDayStem = todayData.dayPillar.charAt(0);
   const todayDayBranch = todayData.dayPillar.charAt(1);
   
-  const todayTenGod = calculateTenGod(userDMeta.e, userDMeta.y, BAZI_MAP.stems[todayDayStem].e, BAZI_MAP.stems[todayDayStem].y);
+  const todayTenGod = fortuneCalculateTenGod(userDMeta.e, userDMeta.y, FORTUNE_BAZI_MAP.stems[todayDayStem].e, FORTUNE_BAZI_MAP.stems[todayDayStem].y);
   const branchRelation = getBranchRelation(userDayBranch, todayDayBranch);
 
   const keyTexts = FORTUNE_KEYWORDS[todayTenGod];
