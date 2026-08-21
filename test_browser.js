@@ -14,7 +14,6 @@ const puppeteer = require('C:/Users/User/AppData/Roaming/npm/node_modules/puppet
     consoleErrors.push(err.toString());
   });
   page.on('dialog', async dialog => {
-    console.log("DIALOG: ", dialog.message());
     await dialog.accept();
   });
 
@@ -31,43 +30,62 @@ const puppeteer = require('C:/Users/User/AppData/Roaming/npm/node_modules/puppet
       res.end();
     }
   });
-  server.listen(8080);
+  server.listen(8082);
 
-  const uri = 'http://localhost:8080/';
+  const uri = 'http://localhost:8082/';
   await page.goto(uri, { waitUntil: 'networkidle0' });
-  await page.evaluate(() => navigate('#saju-input'));
-  async function runCase(year, month, day, expectedCount) {
-    console.log(`\nInputting Case ${year}...`);
+
+  async function runCase(year, rawDateStr) {
+    console.log("Inputting Case " + year);
     await page.evaluate(() => navigate('#saju-input'));
     await page.waitForSelector('#saju-name', { visible: true });
-    await page.evaluate((y, m, d) => {
+
+    // Fill form
+    await page.evaluate((dStr) => {
       document.querySelector('#saju-name').value = 'Test';
       document.querySelector('input[name="saju-gender"][value="f"]').checked = true;
-      document.querySelector('#saju-date').value = `${y}-${m}-${d}`;
+      document.querySelector('#saju-date').value = dStr;
       document.querySelector('#saju-time').value = '12:00';
-    }, year, month, day);
+    }, rawDateStr);
 
     await page.evaluate(() => submitSaju());
-    await page.waitForSelector('#page-saju-result.active');
-    
-    console.log("Navigating to Premium...");
+
+    // Check if we advanced to result page
+    await new Promise(r => setTimeout(r, 500));
+    const isError = await page.evaluate(() => {
+      return document.querySelector('#page-saju-result').classList.contains('active') === false;
+    });
+
+    if (isError) {
+      console.log("CASE_INPUT_" + year + "_RESULT: VALIDATION_FAILED");
+      return;
+    }
+
     await page.evaluate(() => navigate('#premium-report'));
     await page.waitForSelector('#page-premium-report.active');
 
     const html = await page.evaluate(() => document.getElementById('premium-has-data').innerHTML);
-    if (html.includes('분석 중 오류가 발생했습니다.')) {
-      console.log(`CASE_${year}_RESULT: ERROR_MESSAGE_FOUND`);
+    if (html.includes('운담재 PREMIUM')) {
+      console.log("CASE_" + year + "_RESULT: SUCCESS");
     } else {
-      console.log(`CASE_${year}_RESULT: SUCCESS`);
+      console.log("CASE_" + year + "_RESULT: FAIL");
     }
   }
 
-  await runCase('1989', '03', '15');
-  await runCase('1990', '03', '15');
+  await runCase('1989', '1989-03-15');
+  await runCase('1990', '1990-03-15');
+  await runCase('1980', '1980-03-15');
+  await runCase('1990_FORMAT', '19900315');
+  await runCase('INVALID', '19900229');
 
-  console.log("\nCONSOLE_ERRORS:");
+  console.log("CONSOLE_ERRORS:");
   if (consoleErrors.length > 0) {
-    consoleErrors.forEach(e => console.log(e));
+    const filtered = consoleErrors.filter(e => !e.includes('favicon.ico') && !e.includes('404'));
+    if (filtered.length > 0) {
+      filtered.forEach(e => console.log(e));
+    } else {
+      console.log("NONE");
+    }
   } else {
     console.log("NONE");
   }
