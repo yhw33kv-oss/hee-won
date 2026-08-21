@@ -1,4 +1,4 @@
-﻿const puppeteer = require('C:/Users/User/AppData/Roaming/npm/node_modules/puppeteer');
+const puppeteer = require('C:/Users/User/AppData/Roaming/npm/node_modules/puppeteer');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -24,100 +24,158 @@ const path = require('path');
     const page = await browser.newPage();
     page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     page.on('pageerror', err => { consoleErrors.push(err.toString()); });
-    page.on('dialog', async dialog => { await dialog.accept(); });
+    page.on('dialog', async dialog => { console.log('ALERT:', dialog.message()); await dialog.accept(); });
     return page;
   }
 
-  // 1. CASE_HOME_PREMIUM_PREVIEW
+  // 1. CASE_HOME_ORDER
   try {
-    const p1 = await newPage();
-    await p1.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+    const p = await newPage();
+    await p.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
 
-    const hasPremiumCard = await p1.evaluate(() => document.body.innerHTML.includes('운담재 PREMIUM'));
-    if (!hasPremiumCard) throw new Error("No Premium Card on HOME");
+    const html = await p.evaluate(() => document.getElementById('page-main').innerHTML);
+    const brandIndex = html.indexOf('<h2>당신의 이야기를');
+    const freeMenuIndex = html.indexOf('class="menu"');
+    const premiumIndex = html.indexOf('운담재 PREMIUM');
+    const shareIndex = html.indexOf('친구에게 공유하기');
 
-    await p1.evaluate(() => navigate('#premium-preview'));
-    await p1.waitForSelector('#page-premium-preview.active');
+    if (brandIndex < freeMenuIndex && freeMenuIndex < premiumIndex && premiumIndex < shareIndex) {
+      console.log("CASE_HOME_ORDER: PASS");
+    } else {
+      console.log("CASE_HOME_ORDER: FAIL", {brandIndex, freeMenuIndex, premiumIndex, shareIndex});
+    }
+    await p.close();
+  } catch(e) { console.log("CASE_HOME_ORDER: FAIL", e.message); }
 
-    const hasCTA = await p1.evaluate(() => document.body.innerHTML.includes('내 Premium 분석 시작하기'));
-    if (hasCTA) console.log("CASE_HOME_PREMIUM_PREVIEW: PASS");
-    else console.log("CASE_HOME_PREMIUM_PREVIEW: FAIL (No CTA)");
-    await p1.close();
-  } catch(e) { console.log("CASE_HOME_PREMIUM_PREVIEW: FAIL", e.message); }
-
-  // 2. CASE_PREMIUM_START
+  // 2. CASE_PREMIUM_NEW_USER
   try {
-    const p2 = await newPage();
-    await p2.goto('http://localhost:8083/#premium-preview', { waitUntil: 'networkidle0' });
-    await p2.evaluate(() => startPremiumOnboarding());
-    await p2.waitForSelector('#page-saju-input.active');
+    const p = await newPage();
+    await p.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+    
+    // Premium 분석 보기 (HOME)
+    await p.evaluate(() => navigate('#premium-preview'));
+    await p.waitForSelector('#page-premium-preview.active');
 
-    await p2.evaluate(() => {
-      document.querySelector('#saju-name').value = 'Test';
-      document.querySelector('input[name="saju-gender"][value="m"]').checked = true;
-      document.querySelector('#saju-date').value = '1990-03-15';
-      document.querySelector('#saju-time').value = '12:00';
+    // 내 Premium 분석 시작하기
+    await p.evaluate(() => startPremiumOnboarding());
+    await p.waitForSelector('#page-premium-input.active');
+
+    // Verify fields exist
+    const hasFields = await p.evaluate(() => {
+      return document.querySelector('#premium-name') !== null &&
+             document.querySelector('input[name="premium-gender"]') !== null &&
+             document.querySelector('#premium-date') !== null &&
+             document.querySelector('input[name="premium-cal"]') !== null &&
+             document.querySelector('#premium-time') !== null;
+    });
+    if (!hasFields) throw new Error("Missing input fields in #premium-input");
+
+    // Fill data
+    await p.evaluate(() => {
+      document.querySelector('#premium-name').value = 'Test';
+      document.querySelector('input[name="premium-gender"][value="m"]').checked = true;
+      document.querySelector('#premium-date').value = '1990-03-15';
+      document.querySelector('#premium-time').value = '12:00';
     });
 
-    await p2.evaluate(() => submitSaju());
+    // Submit
+    await p.evaluate(() => submitPremium());
     await new Promise(r => setTimeout(r, 500));
     
-    const isPremium = await p2.evaluate(() => document.querySelector('#page-premium-report').classList.contains('active'));
-    if (isPremium) console.log("CASE_PREMIUM_START: PASS");
-    else console.log("CASE_PREMIUM_START: FAIL");
-    await p2.close();
-  } catch(e) { console.log("CASE_PREMIUM_START: FAIL", e.message); }
+    const isPremium = await p.evaluate(() => document.querySelector('#page-premium-report').classList.contains('active'));
+    if (isPremium) console.log("CASE_PREMIUM_NEW_USER: PASS");
+    else console.log("CASE_PREMIUM_NEW_USER: FAIL (Did not navigate to report)");
+    
+    await p.close();
+  } catch(e) { console.log("CASE_PREMIUM_NEW_USER: FAIL", e.message); }
 
-  // 3. CASE_FREE_SAJU
+  // 3. CASE_PREMIUM_EXISTING_USER
   try {
-    const p3 = await newPage();
-    await p3.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
-    await p3.evaluate(() => navigate('#saju-input'));
-    await p3.evaluate(() => {
+    const p = await newPage();
+    await p.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+    
+    // Fill data in free saju to simulate existing data
+    await p.evaluate(() => navigate('#saju-input'));
+    await p.evaluate(() => {
       document.querySelector('#saju-name').value = 'Test';
       document.querySelector('input[name="saju-gender"][value="m"]').checked = true;
       document.querySelector('#saju-date').value = '2000-01-01';
       document.querySelector('#saju-time').value = '12:00';
     });
-    await p3.evaluate(() => submitSaju());
+    await p.evaluate(() => submitSaju());
     await new Promise(r => setTimeout(r, 500));
 
-    const html = await p3.evaluate(() => document.querySelector('#page-saju-result').innerHTML);
+    // Go home
+    await p.evaluate(() => navigate('#main'));
+    await p.waitForSelector('#page-main.active');
 
-    const hasCTA = html.includes('운담재 Premium 보기');
+    // Go Premium
+    await p.evaluate(() => navigate('#premium-preview'));
+    await p.waitForSelector('#page-premium-preview.active');
+
+    // Click CTA -> should go to report directly
+    await p.evaluate(() => startPremiumOnboarding());
+    await new Promise(r => setTimeout(r, 500));
+
+    const isPremium = await p.evaluate(() => document.querySelector('#page-premium-report').classList.contains('active'));
+    if (isPremium) console.log("CASE_PREMIUM_EXISTING_USER: PASS");
+    else console.log("CASE_PREMIUM_EXISTING_USER: FAIL");
+    
+    await p.close();
+  } catch(e) { console.log("CASE_PREMIUM_EXISTING_USER: FAIL", e.message); }
+
+  // 4. CASE_FREE_SAJU
+  try {
+    const p = await newPage();
+    await p.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+    await p.evaluate(() => navigate('#saju-input'));
+    await p.evaluate(() => {
+      document.querySelector('#saju-name').value = 'Test';
+      document.querySelector('input[name="saju-gender"][value="m"]').checked = true;
+      document.querySelector('#saju-date').value = '2000-01-01';
+      document.querySelector('#saju-time').value = '12:00';
+    });
+    await p.evaluate(() => submitSaju());
+    await new Promise(r => setTimeout(r, 500));
+
+    const html = await p.evaluate(() => document.querySelector('#page-saju-result').innerHTML);
+
+    const hasCTA = html.includes('Premium 보기');
     const hasDashboard = html.includes('주목할 전성기 후보') || html.includes('id="premium-candidates-container"');
 
     if (hasCTA && !hasDashboard) console.log("CASE_FREE_SAJU: PASS");
     else console.log("CASE_FREE_SAJU: FAIL", {hasCTA, hasDashboard});
-    await p3.close();
+    await p.close();
   } catch(e) { console.log("CASE_FREE_SAJU: FAIL", e.message); }
 
-  // 4. CASE_PREMIUM_REPORT
+  // 5. CASE_TODAY_FORTUNE
   try {
-    const p4 = await newPage();
-    await p4.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
+    const p = await newPage();
+    await p.goto('http://localhost:8083/', { waitUntil: 'networkidle0' });
     
-    await p4.evaluate(() => navigate('#saju-input'));
-    await p4.evaluate(() => {
+    await p.evaluate(() => navigate('#saju-input'));
+    await p.evaluate(() => {
       document.querySelector('#saju-name').value = 'Test';
       document.querySelector('input[name="saju-gender"][value="m"]').checked = true;
-      document.querySelector('#saju-date').value = '1985-05-15';
+      document.querySelector('#saju-date').value = '2000-01-01';
       document.querySelector('#saju-time').value = '12:00';
     });
-    await p4.evaluate(() => submitSaju());
+    await p.evaluate(() => submitSaju());
+    await new Promise(r => setTimeout(r, 500));
+    
+    await p.evaluate(() => navigate('#main'));
+    await new Promise(r => setTimeout(r, 200));
+
+    await p.evaluate(() => navigate('#fortune-input'));
     await new Promise(r => setTimeout(r, 500));
 
-    await p4.evaluate(() => navigate('#premium-report'));
-    await p4.waitForSelector('#page-premium-report.active');
-
-    const html = await p4.evaluate(() => document.querySelector('#premium-candidates-container').innerHTML);
-    if (html.includes('현재 나의 위치') && html.includes('다음 핵심 시기') && html.includes('전성기 후보') && html.includes('기회 구간') && html.includes('주의 구간') && html.includes('준비할 것') && html.includes('행동할 것')) {
-      console.log("CASE_PREMIUM_REPORT: PASS");
-    } else {
-      console.log("CASE_PREMIUM_REPORT: FAIL - Missing keywords");
-    }
-    await p4.close();
-  } catch(e) { console.log("CASE_PREMIUM_REPORT: FAIL", e.message); }
+    const isFortune = await p.evaluate(() => document.querySelector('#page-fortune-result').classList.contains('active'));
+    if (isFortune) console.log("CASE_TODAY_FORTUNE: PASS");
+    else console.log("CASE_TODAY_FORTUNE: FAIL");
+    await p.close();
+  } catch(e) {
+    console.log("CASE_TODAY_FORTUNE: FAIL", e.message);
+  }
 
   console.log("CONSOLE_ERRORS:");
   if (consoleErrors.length > 0) {

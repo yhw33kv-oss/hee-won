@@ -32,20 +32,6 @@
     </div>
 
 
-    <div style="background: linear-gradient(135deg, #4a3b72 0%, #2a2145 100%); padding: 30px 20px; border-radius: 12px; margin-bottom: 25px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer;" onclick="navigate('#premium-preview')">
-      <div style="font-size: 14px; color: #e1d5ff; font-weight: bold; margin-bottom: 15px;">💎 운담재 PREMIUM</div>
-      <p style="font-size: 16px; margin: 0 0 20px 0; line-height: 1.6; opacity: 0.9;">내 인생의 흐름을<br>시간의 관점에서 분석합니다.</p>
-      <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; font-size: 13px; color: #e1d5ff; margin-bottom: 20px; text-align: left; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-        <span>✓ 현재 위치</span>
-        <span>✓ 전성기 후보</span>
-        <span>✓ 기회 구간</span>
-        <span>✓ 주의 구간</span>
-        <span>✓ 준비 전략</span>
-        <span>✓ 행동 전략</span>
-      </div>
-      <button style="background: #fff; color: #4a3b72; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; font-size: 15px; width: 100%;">Premium 분석 보기</button>
-    </div>
-
     <div class="menu">
       <button onclick="navigate('#saju-input')">
         <span class="icon">✨</span>사주풀이
@@ -59,6 +45,20 @@
       <button onclick="navigate('#consult')">
         <span class="icon">💬</span>상담
       </button>
+    </div>
+
+    <div style="background: linear-gradient(135deg, #4a3b72 0%, #2a2145 100%); padding: 30px 20px; border-radius: 12px; margin-bottom: 25px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer;" onclick="navigate('#premium-preview')">
+      <div style="font-size: 14px; color: #e1d5ff; font-weight: bold; margin-bottom: 15px;">💎 운담재 PREMIUM</div>
+      <p style="font-size: 16px; margin: 0 0 20px 0; line-height: 1.6; opacity: 0.9;">내 인생의 흐름을<br>시간의 관점에서 분석합니다.</p>
+      <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; font-size: 13px; color: #e1d5ff; margin-bottom: 20px; text-align: left; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+        <span>✓ 현재 위치</span>
+        <span>✓ 전성기 후보</span>
+        <span>✓ 기회 구간</span>
+        <span>✓ 주의 구간</span>
+        <span>✓ 준비 전략</span>
+        <span>✓ 행동 전략</span>
+      </div>
+      <button style="background: #fff; color: #4a3b72; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; font-size: 15px; width: 100%;">Premium 분석 보기</button>
     </div>
 
     <div style="margin-top: 15px; padding: 0 5px;">
@@ -220,7 +220,53 @@
     </div>
   </div>
 
-  <!-- PAGE: PREMIUM REPORT -->
+    <!-- PAGE: PREMIUM INPUT -->
+  <div id="page-premium-input" class="page">
+    <header>
+      <button class="back-btn" onclick="navigate('#premium-preview')">←</button>
+      <h1>Premium 정보 입력</h1>
+    </header>
+    <div class="card">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 14px; color: #4a3b72; font-weight: bold; margin-bottom: 5px;">💎 운담재 PREMIUM</div>
+        <p style="font-size: 14px; color: #555;">내 인생 타이밍 분석을 위해<br>기본 정보를 입력해주세요.</p>
+      </div>
+      <div class="form-group">
+        <label>이름</label>
+        <input type="text" id="premium-name" placeholder="홍길동">
+      </div>
+      <div class="form-group">
+        <label>성별</label>
+        <div class="radio-group">
+          <label><input type="radio" name="premium-gender" value="m"> 남성</label>
+          <label><input type="radio" name="premium-gender" value="f"> 여성</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>생년월일</label>
+        <input type="text" inputmode="numeric" maxlength="10" placeholder="예: 1990-03-15" id="premium-date">
+        <div class="radio-group" style="margin-top: 10px;">
+          <label><input type="radio" name="premium-cal" value="solar" checked> 양력</label>
+          <label><input type="radio" name="premium-cal" value="lunar"> 음력</label>
+          <label><input type="radio" name="premium-cal" value="lunar_leap"> 음력(윤달)</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>출생시간</label>
+        <input type="time" id="premium-time">
+        <label style="display:flex; align-items:center; gap:5px; margin-top:8px; font-weight:normal; font-size:14px;">
+          <input type="checkbox" id="premium-time-unknown" style="width:auto;"> 출생시간을 모름
+        </label>
+      </div>
+      <div class="form-group">
+        <label>출생지역 (선택)</label>
+        <input type="text" id="premium-place" placeholder="서울">
+      </div>
+      <button class="submit-btn" style="background-color: #6846c7;" onclick="submitPremium()">Premium 분석 시작</button>
+    </div>
+  </div>
+
+<!-- PAGE: PREMIUM REPORT -->
   <div id="page-premium-report" class="page">
     <header>
       <button class="back-btn" onclick="navigate('#main')">← 홈</button>

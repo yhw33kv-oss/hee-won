@@ -65,6 +65,7 @@ function handleRoute() {
     if (hash === '#saju-result') setupSajuResult();
     if (hash === '#fortune-input') setupFortuneInput();
     if (hash === '#fortune-result') setupFortuneResult();
+    if (hash === '#premium-input') setupPremiumInput();
     if (hash === '#premium-report') setupPremiumReport();
     if (hash === '#settings') setupSettings();
   } else {
@@ -718,8 +719,9 @@ function setupPremiumReport() {
   }
 
   // 연도별 상세 데이터 (Accordion)
-  html += `<div style="margin-top: 30px; text-align: center;">
-    <button class="action-btn" style="background: #eee; color: #555; padding: 12px 20px; border-radius: 8px; border: none; font-size: 14px; width: 100%; font-weight: bold;" onclick="togglePremiumEvidence('year-detail-accordion')">연도별 상세 보기 ▾</button>
+  html += `<div style="margin-top: 30px; text-align: center; display: flex; gap: 10px; flex-direction: column;">
+    <button class="action-btn" style="background: #eee; color: #555; padding: 12px 20px; border-radius: 8px; border: none; font-size: 14px; font-weight: bold;" onclick="togglePremiumEvidence('year-detail-accordion')">연도별 상세 보기 ▾</button>
+    <button class="action-btn" style="background: #fff; border: 1px solid #ddd; color: #777; padding: 10px 20px; border-radius: 8px; font-size: 13px;" onclick="navigate('#premium-input')">정보 다시 입력하기</button>
   </div>
   <div id="year-detail-accordion" style="display: none; margin-top: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">`;
   
@@ -756,7 +758,94 @@ function startPremiumOnboarding() {
   if (state.user && state.user.sajuResult) {
     navigate('#premium-report');
   } else {
-    state.returnToPremium = true;
-    navigate('#saju-input');
+    navigate('#premium-input');
+  }
+}
+
+
+function setupPremiumInput() {
+  if (state.user) {
+    document.getElementById('premium-name').value = state.user.sajuResult.bazi.name || '';
+    const g = document.querySelector('input[name="premium-gender"][value="' + state.user.gender + '"]');
+    if (g) g.checked = true;
+    
+    // We don't have the original raw date string saved in state, but we can reconstruct it
+    const bazi = state.user.sajuResult.bazi;
+    if (bazi.solarDate) {
+      const d = bazi.solarDate;
+      const m = (d.getMonth()+1).toString().padStart(2, '0');
+      const day = d.getDate().toString().padStart(2, '0');
+      document.getElementById('premium-date').value = `${d.getFullYear()}-${m}-${day}`;
+    }
+  }
+}
+
+function submitPremium() {
+  const name = document.getElementById('premium-name').value.trim();
+  const genderEl = document.querySelector('input[name="premium-gender"]:checked');
+  const dateRaw = document.getElementById('premium-date').value.trim();
+  const calTypeEl = document.querySelector('input[name="premium-cal"]:checked');
+  const time = document.getElementById('premium-time').value;
+  const timeUnknown = document.getElementById('premium-time-unknown').checked;
+  const place = document.getElementById('premium-place').value.trim();
+
+  if (!name) return alert('이름을 입력해주세요.');
+  if (!genderEl) return alert('성별을 선택해주세요.');
+  if (!dateRaw) return alert('생년월일을 입력해주세요.');
+  if (!calTypeEl) return alert('양력/음력을 선택해주세요.');
+  if (!timeUnknown && !time) return alert('출생시간을 입력하시거나 모름을 체크해주세요.');
+
+  let dateStr = dateRaw.replace(/[^0-9]/g, '');
+  if (dateStr.length !== 8) return alert('생년월일은 YYYYMMDD 또는 YYYY-MM-DD 형식으로 8자리여야 합니다.');
+  
+  const y = parseInt(dateStr.substring(0, 4), 10);
+  const m = parseInt(dateStr.substring(4, 6), 10);
+  const d = parseInt(dateStr.substring(6, 8), 10);
+  
+  if (m < 1 || m > 12 || d < 1 || d > 31) return alert('유효하지 않은 날짜입니다.');
+  
+  const testDate = new Date(y, m - 1, d);
+  if (testDate.getFullYear() !== y || testDate.getMonth() !== m - 1 || testDate.getDate() !== d) {
+    return alert('유효하지 않은 날짜입니다. (예: 2월 29일 등 확인)');
+  }
+  
+  const now = new Date();
+  if (testDate > now) return alert('미래의 날짜는 입력할 수 없습니다.');
+
+  const formattedDate = `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+  
+  const params = {
+    name,
+    gender: genderEl.value,
+    birthDate: formattedDate,
+    calendarType: calTypeEl.value,
+    birthTime: timeUnknown ? '12:00' : time,
+    birthTimeUnknown: timeUnknown,
+    birthPlace: place
+  };
+
+  try {
+    const r = calculateSaju(params);
+    state.user = {
+      sajuResult: r.sajuResult,
+      gender: params.gender,
+      normalizedBirthData: r.normalizedBirthData
+    };
+    saveUserData(state.user);
+    
+    // Create premium report immediately
+    const bazi = state.user.sajuResult.bazi;
+    
+    const bd = r.normalizedBirthData;
+    const solar = Solar.fromYmdHms(bd.year, bd.month, bd.day, bd.hour, bd.minute, 0);
+    const lunarStr = solar.getLunar().getEightChar();
+    const report = window.UndamjaePremiumEngine.processPremiumReport(state.user.sajuResult, lunarStr);
+
+    state.premiumReport = report;
+    saveUserData(state.user);
+
+    navigate('#premium-report');
+  } catch(e) {
+    alert('사주 계산 중 오류가 발생했습니다: ' + e.message);
   }
 }
